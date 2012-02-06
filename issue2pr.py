@@ -1,11 +1,13 @@
-
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import print_function
+#Requires python >=2.6
 """
 Tool to convert github issues to pull requests by attaching code. Uses the
 github v3 API. Defaults assumed for the `astropy <http://www.astropy.org>`_
 project.
 """
+
+from __future__ import print_function
 
 
 def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
@@ -99,6 +101,13 @@ def _add_basic_auth_header(req, username, pw):
 
 
 if __name__ == '__main__':
+    import sys
+
+    if sys.version_info < (2,6):
+        print('issue2pr.py requires Python >=2.6, exiting')
+        sys.exit(-1)
+
+
     import argparse
 
     descr = 'Convert a github issue to a Pull Request by attaching code.'
