@@ -270,11 +270,13 @@ class GithubSuggestBackports(object):
         # Get the last tag that should be in this branch
         for tag in tags:
             tag_ver = pkg_resources.parse_version(tag['name'].lstrip('v'))
-            if tag_ver[:2] == branch_ver[:2]:
+            if tag_ver[0] == branch_ver[0] and (branch_ver[1].startswith('*') or tag_ver[1] == branch_ver[1]):
                 self._last_tag = tag
-                return tag
+                break
+        else:
+            self._last_tag = False
+        return self._last_tag
 
-        self._last_tag = False
 
     _last_tag_commit = None
     def get_last_tag_commit(self):
