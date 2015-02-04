@@ -1,0 +1,175 @@
+from __future__ import print_function
+
+"""
+This script will use PyPI to identify a release of a package, and then search
+through github to get a count of all of the issues and PRs closed/merged since
+that release.
+
+Usage:
+python gh_issuereport.py astropy/astropy astropy/0.3
+
+Note that it will prompt you for yout github username/password.  This isn't
+necessary if you have less than 6000 combined issues/PRs, but if you have more
+than that (or run the script multiple times in an hour without caching), you
+might hit github's 60 api calls per hour limit (which increases to 5000 if you
+log in).
+
+Also note that running this will by default cache the PRs/issues in "prs.json"
+and "issues.json".  Give it the "-n" option to not do that.
+
+Requires the requests package (https://pypi.python.org/pypi/requests/).
+
+"""
+
+import os
+import json
+import datetime
+
+import requests
+
+GH_API_BASE_URL = 'https://api.github.com'
+ISO_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+
+
+def paginate_list_request(req, verbose=False, auth=None):
+    elems = []
+    currreq = req
+    i = 1
+
+    while 'next' in currreq.links:
+        elems.extend(currreq.json())
+
+        i += 1
+        if verbose:
+            print('Doing request', i, 'of', currreq.links['last']['url'].split('page=')[-1])
+        currreq = requests.get(currreq.links['next']['url'], auth=auth)
+
+    elems.extend(currreq.json())
+    return elems
+
+
+def count_issues_since(dt, repo, auth=None, verbose=True, cacheto=None):
+    if cacheto and os.path.exists(cacheto):
+        with open(cacheto) as f:
+            isslst = json.load(f)
+    else:
+        url = GH_API_BASE_URL + '/repos/' + repo + '/issues?per_page=100&state=all'
+
+        req = requests.get(url, auth=auth)
+        isslst = paginate_list_request(req, verbose, auth=auth)
+        if cacheto:
+            with open(cacheto, 'w') as f:
+                json.dump(isslst, f)
+
+    nopened = nclosed = 0
+
+    for entry in isslst:
+        createddt = datetime.datetime.strptime(entry['created_at'],  ISO_FORMAT)
+        if createddt > dt:
+            nopened += 1
+
+        if entry['closed_at']:
+            closeddt = datetime.datetime.strptime(entry['closed_at'],  ISO_FORMAT)
+            if closeddt > dt:
+                nclosed += 1
+
+    return {'opened': nopened, 'closed': nclosed}
+
+
+def count_prs_since(dt, repo, auth=None, verbose=True, cacheto=None):
+    if cacheto and os.path.exists(cacheto):
+        with open(cacheto) as f:
+            prlst = json.load(f)
+    else:
+        url = GH_API_BASE_URL + '/repos/' + repo + '/pulls?per_page=100&state=all'
+
+        req = requests.get(url, auth=auth)
+        prlst = paginate_list_request(req, verbose, auth=auth)
+        if cacheto:
+            with open(cacheto, 'w') as f:
+                json.dump(prlst, f)
+
+
+    nopened = nclosed = 0
+
+    usersopened = []
+    usersclosed = []
+
+    for entry in prlst:
+        createddt = datetime.datetime.strptime(entry['created_at'],  ISO_FORMAT)
+        if createddt > dt:
+            nopened += 1
+            usersopened.append(entry['user']['id'])
+
+        if entry['merged_at']:
+            closeddt = datetime.datetime.strptime(entry['merged_at'],  ISO_FORMAT)
+            if closeddt > dt:
+                nclosed += 1
+                usersclosed.append(entry['user']['id'])
+
+    return {'opened': nopened, 'merged': nclosed,
+            'usersopened': len(set(usersopened)),
+            'usersmerged': len(set(usersclosed))}
+
+
+def get_datetime_of_pypi_version(pkg, version):
+    from xml.dom import minidom
+
+    url = 'http://pypi.python.org/pypi/{0}/{1}'.format(pkg, version)
+
+    dom = minidom.parseString(requests.get(url).content)
+
+    table = dom.getElementsByTagName('table')[0]
+    t = table.getElementsByTagName('tr')[1].getElementsByTagName('td')[-2].firstChild
+    if t.nodeType != t.TEXT_NODE:
+        raise ValueError("pypi page for {0}/{1} ddoesn't seem to have a date".format(pkg, version))
+    else:
+        datestr = t.data
+
+    return datetime.datetime.strptime(datestr, "%Y-%m-%d")
+
+if __name__ == '__main__':
+    import argparse
+    from getpass import getpass
+
+    parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('repo', help='the github repo to use')
+    parser.add_argument('package', help='the package/version to lookup on pypi '
+                                        'or "None" to skip the lookup')
+
+    parser.add_argument('-q', '--quiet', help='hide informational messages',
+                                         dest='verbose', action='store_false')
+    parser.add_argument('-n', '--no-cache', help="don't cache the downloaded "
+                                                 "issue/PR info (and don't read "
+                                                 "the cached versions)",
+                                            dest='cache', action='store_false')
+
+    args = parser.parse_args()
+    if args.package.lower() == 'none':
+        # probably nothing on github was created before the year 1900...
+        pkgdt = datetime.datetime(1900, 1, 1)
+        if args.verbose:
+            print('Not looking up a PyPI package')
+    else:
+        pkgdt = get_datetime_of_pypi_version(*args.package.split('/'))
+        if args.verbose:
+            print('Found PyPI entry for', args.package, ':', pkgdt)
+
+    un = raw_input('Github username (blank for no auth): ')
+    if un:
+        auth = (un, getpass())
+    else:
+        auth = None
+
+    if args.cache:
+        icache = 'issues.json'
+        prcache = 'prs.json'
+    else:
+        icache = prcache = None
+
+    icnt = count_issues_since(pkgdt, args.repo, auth=auth, verbose=args.verbose, cacheto=icache)
+    prcnt = count_prs_since(pkgdt, args.repo, auth=auth, verbose=args.verbose, cacheto=prcache)
+
+    print(icnt['opened'], 'issues opened since', args.package, 'and', icnt['closed'], 'issues closed')
+    print(prcnt['opened'], 'PRs opened since', args.package, 'and', prcnt['merged'], 'PRs merged')
+    print(prcnt['usersopened'], 'unique users opened PRs, and', prcnt['usersmerged'], 'of them got it merged')
