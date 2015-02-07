@@ -8,16 +8,16 @@
 
 from __future__ import unicode_literals
 
-import argparse
-import base64
-import getpass
-import io
-import json
-import logging
 import os
 import re
-import stat
+import io
 import sys
+import stat
+import json
+import base64
+import logging
+import getpass
+import argparse
 
 try:
     from urllib.request import Request, urlopen
