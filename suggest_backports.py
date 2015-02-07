@@ -19,6 +19,9 @@ import logging
 import getpass
 import argparse
 
+if sys.version_info[0] < 3:
+    raise RuntimeError('suggest_backports.py requires python 3.x')
+
 try:
     from urllib.request import Request, urlopen
     from urllib.error import HTTPError
