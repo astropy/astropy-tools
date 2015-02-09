@@ -51,13 +51,16 @@ CONFLICTS_RE = re.compile(r'((?:.|\n)+)\nConflicts:(\n.*)+', flags=re.M)
 log = logging.getLogger()
 
 
-
 class _MaxLevelFilter(logging.Filter):
     def __init__(self, maxlevel):
         self.maxlevel = maxlevel
 
     def filter(self, record):
         return record.levelno <= self.maxlevel
+
+
+def _normalize_newlines(s):
+    return s.replace('\r\n', '\n').replace('\r', '\n')
 
 
 class GithubRequestError(Exception):
@@ -258,9 +261,14 @@ class GithubSuggestBackports(object):
             # conflicts can cause the message to be different where it
             # otherwise wouldn't have been, and we don't care if there were
             # conflicts so long as it was merged successfully
-            b['message'] = CONFLICTS_RE.sub(r'\1', b['message'])
+            a_message = _normalize_newlines(a['message'])
+            b_message = _normalize_newlines(b['message'])
+            b_message = CONFLICTS_RE.sub(r'\1', b_message)
 
-            if a['author'] == b['author'] and a['message'] == b['message']:
+            if a['author'] == b['author'] and a_message == b_message:
+                # Update the commit dict with the cleaned up commit message as
+                # well
+                b['message'] = b_message
                 return merged_commit
 
             idx += 1
