@@ -19,8 +19,6 @@ import re
 import stat
 import sys
 
-if sys.version_info[0] < 3:
-    raise RuntimeError('suggest_backports.py requires python 3.x')
 
 try:
     from urllib.request import Request, urlopen
@@ -91,7 +89,12 @@ class GithubSuggestBackports(object):
             req.add_header('Authorization', 'Basic ' + self._auth)
         try:
             f = urlopen(req)
-            enc = f.headers.get_content_charset()
+            try:
+                enc = f.headers.get_content_charset()
+            except AttributeError:
+                # Python 2 doesn't have get_content_charset
+                enc = f.headers.getparam('charset')
+
             content = f.read().decode(enc)
             response = json.loads(content)
         except HTTPError as e:
