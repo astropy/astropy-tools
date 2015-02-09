@@ -8,16 +8,16 @@
 
 from __future__ import unicode_literals
 
+import argparse
+import base64
+import getpass
+import io
+import json
+import logging
 import os
 import re
-import io
-import sys
 import stat
-import json
-import base64
-import logging
-import getpass
-import argparse
+import sys
 
 if sys.version_info[0] < 3:
     raise RuntimeError('suggest_backports.py requires python 3.x')
