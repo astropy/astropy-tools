@@ -37,7 +37,10 @@ except NameError:
 import pkg_resources
 
 
-BASE_URL = 'https://api.github.com/repos/'
+# In principle these should be configurable, but I don't currently have any
+# projects on enterprise GitHub hosts where it would matter.
+GITHUB_API_HOST = 'api.github.com'
+BASE_URL = 'https://{0}/repos/'.format(GITHUB_API_HOST)
 
 # This regex ensures that only the 'Conflicts:' section at the end of the
 # commit message is matched (in case there are multiple 'Conflicts' sections
@@ -347,6 +350,35 @@ class GithubSuggestBackports(object):
                 yield pr, merge_commit['sha']
 
 
+def get_credentials():
+    username = password = None
+
+    try:
+        my_netrc = netrc.netrc()
+    except:
+        pass
+    else:
+        auth = my_netrc.authenticators(GITHUB_API_HOST)
+        if auth:
+            response = ''
+            while response.lower() not in ('y', 'n'):
+                log.info('Using the following GitHub credentials from '
+                      '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
+                response = input(
+                    'Use these credentials (if not you will be prompted '
+                    'for new credentials)? [Y/n] ')
+            if response.lower() == 'y':
+                username = auth[0]
+                password = auth[2]
+
+    if not (username and password):
+        log.info("Enter your GitHub username and password so that API "
+                 "requests aren't as severely rate-limited...")
+        username = input('Username: ')
+        password = getpass.getpass('Password: ')
+
+    return username, password
+
 def main(argv):
     parser = argparse.ArgumentParser(
         description='Find pull requests that need be backported to a bug fix '
@@ -376,11 +408,9 @@ def main(argv):
     stderr_handler.setLevel(logging.WARNING)
     log.addHandler(stderr_handler)
 
+    username, password = get_credentials()
 
-    log.info("Enter your GitHub username and password so that API requests "
-             "aren't as severely rate-limited...")
-    username = input('Username: ')
-    password = getpass.getpass('Password: ')
+    # Try reading a local .netrc file for the required credentials
     suggester = GithubSuggestBackports(args.owner, args.repo, args.branch,
                                        username, password)
 
