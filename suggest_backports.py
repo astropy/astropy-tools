@@ -14,6 +14,7 @@ import getpass
 import io
 import json
 import logging
+import netrc
 import os
 import re
 import stat
