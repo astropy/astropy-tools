@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-# NOTE: this requires py 3.x
-
 # I wasn't happy with any of the GitHub libraries for Python that I tried so I
 # just used the GitHub API directly.  If someone would like to rewrite this
 # using a library please be my guest
+
+# If you don't want to type in a password everytime, this supports using a
+# .netrc file from the local machine. Host should be whatever GITHUB_API_HOST
+# is below
 
 from __future__ import unicode_literals
 
@@ -38,8 +40,8 @@ except NameError:
 import pkg_resources
 
 
-# In principle these should be configurable, but I don't currently have any
-# projects on enterprise GitHub hosts where it would matter.
+# In principle these should be configurable for projects on enterprise GitHub
+# hosts, but right now we're only using it with the public GitHub.
 GITHUB_API_HOST = 'api.github.com'
 BASE_URL = 'https://{0}/repos/'.format(GITHUB_API_HOST)
 
