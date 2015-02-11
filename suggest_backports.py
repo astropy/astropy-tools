@@ -293,12 +293,12 @@ class GithubSuggestBackports(object):
         tags = sorted(self.get_tags(),
                       key=lambda t: pkg_resources.parse_version(t['name']),
                       reverse=True)
+        branch_base_ver_name = self.branch.lstrip('v').rstrip('.x')
+
         # Get the last tag that should be in this branch
         for tag in tags:
-            tag_ver = pkg_resources.parse_version(tag['name'].lstrip('v'))
-            branch_base_ver = branch_ver[:branch_ver.index('*x')]
-            cmp_indx = len(branch_base_ver)
-            if tag_ver[:cmp_indx] == branch_ver[:cmp_indx]:
+            tag_ver_name = tag['name'].lstrip('v')
+            if tag_ver_name.startswith(branch_base_ver_name):
                 self._last_tag = tag
                 break
         else:
