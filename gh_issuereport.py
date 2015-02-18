@@ -100,13 +100,17 @@ def count_prs_since(dt, repo, auth=None, verbose=True, cacheto=None):
         createddt = datetime.datetime.strptime(entry['created_at'],  ISO_FORMAT)
         if createddt > dt:
             nopened += 1
-            usersopened.append(entry['user']['id'])
+            user = entry['user']
+            if user is not None:
+                usersopened.append(user['id'])
 
         if entry['merged_at']:
             closeddt = datetime.datetime.strptime(entry['merged_at'],  ISO_FORMAT)
             if closeddt > dt:
                 nclosed += 1
-                usersclosed.append(entry['user']['id'])
+                user = entry['user']
+                if user is not None:
+                    usersclosed.append(user['id'])
 
     return {'opened': nopened, 'merged': nclosed,
             'usersopened': len(set(usersopened)),
