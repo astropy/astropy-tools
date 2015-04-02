@@ -390,7 +390,7 @@ def get_credentials():
 
     return username, password
 
-def main(argv):
+def main(argv=None):
     parser = argparse.ArgumentParser(
         description='Find pull requests that need be backported to a bug fix '
                     'branch')
