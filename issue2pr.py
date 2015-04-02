@@ -119,8 +119,8 @@ def main(argv=None):
                         default='master', help='The branch name the pull '
                         'request should be pulled into (default: master)')
     parser.add_argument('--baseurl', metavar='URL', type=str,
-                        default='https://api.github.com', help='The base '
-                        'URL for github (default: https://api.github.com)')
+                        default=GH_API_BASE_URL, help='The base '
+                        'URL for github (default: %(default)s)')
 
     args = parser.parse_args(argv)
 
