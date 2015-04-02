@@ -25,11 +25,18 @@ setup(
         'Topic :: Software Development',
         'Topic :: Utilities'
     ],
-    py_modules=['gitastropyplots'],
-    scripts=[
-        'gh_issuereport.py',
-        'issue2pr.py',
-        'suggest_backports.py'
-    ]
+    py_modules=[
+        'gitastropyplots',
+        'gh_issuereport',
+        'issue2pr',
+        'suggest_backports'
+    ],
+    entry_points={
+        'console_scripts': [
+            'gh_issuereport = gh_issuereport:main',
+            'issue2pr = issue2pr:main',
+            'suggest_backports = suggest_backports:main'
+        ]
+    }
 )
 

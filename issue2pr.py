@@ -9,6 +9,9 @@ project.
 
 from __future__ import print_function
 
+import argparse
+import sys
+
 
 def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
                 targetbranch='master', username=None, pw=None,
@@ -100,15 +103,10 @@ def _add_basic_auth_header(req, username, pw):
     req.add_header('Authorization', 'Basic ' + upwstrenc)
 
 
-if __name__ == '__main__':
-    import sys
-
+def main(argv=None):
     if sys.version_info < (2,6):
         print('issue2pr.py requires Python >=2.6, exiting')
         sys.exit(-1)
-
-
-    import argparse
 
     descr = 'Convert a github issue to a Pull Request by attaching code.'
     parser = argparse.ArgumentParser(description=descr)
@@ -133,7 +131,7 @@ if __name__ == '__main__':
                         default='https://api.github.com', help='The base '
                         'URL for github (default: https://api.github.com)')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
     targrepo = args.targetuser + '/' + args.repo
 
@@ -142,3 +140,7 @@ if __name__ == '__main__':
           args.repo, 'repo to branch', args.targbranch, 'of ', targrepo)
     issue_to_pr(args.issuenum, args.srcbranch, args.repo, args.targetuser,
                 args.targbranch, None, None, args.baseurl)
+
+
+if __name__ == '__main__':
+    main()

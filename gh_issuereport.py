@@ -22,9 +22,12 @@ Requires the requests package (https://pypi.python.org/pypi/requests/).
 
 """
 
+import argparse
 import os
 import json
 import datetime
+
+from getpass import getpass
 
 import requests
 
@@ -133,10 +136,8 @@ def get_datetime_of_pypi_version(pkg, version):
 
     return datetime.datetime.strptime(datestr, "%Y-%m-%d")
 
-if __name__ == '__main__':
-    import argparse
-    from getpass import getpass
 
+def main(argv=None):
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('repo', help='the github repo to use')
     parser.add_argument('package', help='the package/version to lookup on pypi '
@@ -149,7 +150,7 @@ if __name__ == '__main__':
                                                  "the cached versions)",
                                             dest='cache', action='store_false')
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     if args.package.lower() == 'none':
         # probably nothing on github was created before the year 1900...
         pkgdt = datetime.datetime(1900, 1, 1)
@@ -178,3 +179,7 @@ if __name__ == '__main__':
     print(icnt['opened'], 'issues opened since', args.package, 'and', icnt['closed'], 'issues closed')
     print(prcnt['opened'], 'PRs opened since', args.package, 'and', prcnt['merged'], 'PRs merged')
     print(prcnt['usersopened'], 'unique users opened PRs, and', prcnt['usersmerged'], 'of them got it merged')
+
+
+if __name__ == '__main__':
+    main()
