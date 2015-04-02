@@ -37,6 +37,7 @@ setup(
             'issue2pr = issue2pr:main',
             'suggest_backports = suggest_backports:main'
         ]
-    }
+    },
+    install_requires=['requests']
 )
 
