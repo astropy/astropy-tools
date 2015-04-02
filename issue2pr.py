@@ -10,12 +10,26 @@ project.
 from __future__ import print_function
 
 import argparse
+import getpass
+import json
 import sys
+import urllib
+
+try:
+    import requests
+except ImportError:
+    print('This script requests the requests module--it can be installed '
+          '`pip install requests`, or your package manager of choice.',
+          file=sys.stderr)
+    sys.exit(1)
+
+
+GH_API_BASE_URL = 'https://api.github.com'
 
 
 def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
                 targetbranch='master', username=None, pw=None,
-                baseurl='https://api.github.com'):
+                baseurl=GH_API_BASE_URL):
     """
     Attaches code to an issue, converting a regular issue into a pull request.
 
@@ -61,15 +75,12 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
 
     """
 
-    import urllib
-    import urllib2
-    import getpass
-    import json
-
     if username is None:
         username = raw_input('Username: ')
     if pw is None:
         pw = getpass.getpass()
+
+    auth = (username, pw)
 
     data = {'issue': str(issuenum),
             'head': username + ':' + srcbranch,
@@ -79,28 +90,8 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
 
     suburl = 'repos/{user}/{repo}/pulls'.format(user=targetuser, repo=repo)
     url = urllib.basejoin(baseurl, suburl)
-
-    req = urllib2.Request(url)
-    req.add_data(datajson)
-    _add_basic_auth_header(req, username, pw)
-
-    try:
-        response = urllib2.urlopen(req)
-    except urllib2.HTTPError, e:
-        print('HTTP Error', e)
-        res = e.fp.read()
-        return json.loads(res), str(e)
-    res = response.read()
-    return json.loads(res)
-
-
-def _add_basic_auth_header(req, username, pw):
-    from base64 import b64encode
-
-    upwstr = username + ':' + pw
-    upwstrenc = b64encode(upwstr.encode('utf-8')).strip().decode('utf-8')
-
-    req.add_header('Authorization', 'Basic ' + upwstrenc)
+    res = requests.post(url, data=datajson, auth=auth)
+    return res.json()
 
 
 def main(argv=None):
