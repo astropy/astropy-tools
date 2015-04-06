@@ -13,7 +13,7 @@ import argparse
 import getpass
 import json
 import sys
-import urllib
+
 
 try:
     import requests
@@ -22,6 +22,14 @@ except ImportError:
           '`pip install requests`, or your package manager of choice.',
           file=sys.stderr)
     sys.exit(1)
+
+
+if sys.version_info[0] >= 3:
+    # Define raw_input on Python 3
+    raw_input = input
+    from urllib.parse import urljoin as basejoin
+else:
+    from urllib import basejoin
 
 
 GH_API_BASE_URL = 'https://api.github.com'
@@ -89,7 +97,7 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
     datajson = json.dumps(data)
 
     suburl = 'repos/{user}/{repo}/pulls'.format(user=targetuser, repo=repo)
-    url = urllib.basejoin(baseurl, suburl)
+    url = basejoin(baseurl, suburl)
     res = requests.post(url, data=datajson, auth=auth)
     return res.json()
 
