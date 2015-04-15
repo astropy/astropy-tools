@@ -36,8 +36,7 @@ GH_API_BASE_URL = 'https://api.github.com'
 
 
 def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
-                targetbranch='master', username=None, pw=None,
-                baseurl=GH_API_BASE_URL):
+                targetbranch='master', baseurl=GH_API_BASE_URL):
     """
     Attaches code to an issue, converting a regular issue into a pull request.
 
@@ -83,13 +82,6 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
 
     """
 
-    if username is None:
-        username = raw_input('Username: ')
-    if pw is None:
-        pw = getpass.getpass()
-
-    auth = (username, pw)
-
     data = {'issue': str(issuenum),
             'head': username + ':' + srcbranch,
             'base': targetbranch}
@@ -98,8 +90,38 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
 
     suburl = 'repos/{user}/{repo}/pulls'.format(user=targetuser, repo=repo)
     url = basejoin(baseurl, suburl)
-    res = requests.post(url, data=datajson, auth=auth)
+    res = requests.post(url, data=datajson, auth=get_credentials())
     return res.json()
+
+
+def get_credentials():
+    username = password = None
+
+    try:
+        my_netrc = netrc.netrc()
+    except:
+        pass
+    else:
+        auth = my_netrc.authenticators(GITHUB_API_HOST)
+        if auth:
+            response = ''
+            while response.lower() not in ('y', 'n'):
+                log.info('Using the following GitHub credentials from '
+                      '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
+                response = input(
+                    'Use these credentials (if not you will be prompted '
+                    'for new credentials)? [Y/n] ')
+            if response.lower() == 'y':
+                username = auth[0]
+                password = auth[2]
+
+    if not (username and password):
+        log.info("Enter your GitHub username and password so that API "
+                 "requests aren't as severely rate-limited...")
+        username = input('Username: ')
+        password = getpass.getpass('Password: ')
+
+    return username, password
 
 
 def main(argv=None):
@@ -138,7 +160,7 @@ def main(argv=None):
     print('Will request to pull branch', args.srcbranch, 'of user\'s',
           args.repo, 'repo to branch', args.targbranch, 'of ', targrepo)
     issue_to_pr(args.issuenum, args.srcbranch, args.repo, args.targetuser,
-                args.targbranch, None, None, args.baseurl)
+                args.targbranch, args.baseurl)
 
 
 if __name__ == '__main__':
