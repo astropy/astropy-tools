@@ -41,7 +41,7 @@ def search_astropy_affiliated_packages(args):
     webbrowser.open(url)
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 1 or '--help' in sys.argv:
         print("Searches for a string across all affiliated packages on github, ")
         print("and opens the results in the default webbrowser.")
@@ -50,3 +50,7 @@ if __name__ == '__main__':
         sys.exit(0)
 
     search_astropy_affiliated_packages(sys.argv[1:])
+
+
+if __name__ == '__main__':
+    main()

@@ -29,13 +29,15 @@ setup(
         'gitastropyplots',
         'gh_issuereport',
         'issue2pr',
-        'suggest_backports'
+        'suggest_backports',
+        'astropy_grep_affiliated'
     ],
     entry_points={
         'console_scripts': [
             'gh_issuereport = gh_issuereport:main',
             'issue2pr = issue2pr:main',
-            'suggest_backports = suggest_backports:main'
+            'suggest_backports = suggest_backports:main',
+            'astropy_grep_affiliated = astropy_grep_affiliated:main'
         ]
     },
     install_requires=['requests']
