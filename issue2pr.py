@@ -14,7 +14,6 @@ import getpass
 import json
 import sys
 
-
 try:
     import requests
 except ImportError:
@@ -35,8 +34,9 @@ else:
 GH_API_BASE_URL = 'https://api.github.com'
 
 
-def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
-                targetbranch='master', baseurl=GH_API_BASE_URL):
+def issue_to_pr(issuenum, srcbranch, repo='astropy', sourceuser='',
+                targetuser='astropy', targetbranch='master',
+                baseurl=GH_API_BASE_URL):
     """
     Attaches code to an issue, converting a regular issue into a pull request.
 
@@ -82,8 +82,12 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', targetuser='astropy',
 
     """
 
+    while not sourceuser:
+        sourceuser = raw_input('Enter GitHub username to create pull '
+                               'request from: ')
+
     data = {'issue': str(issuenum),
-            'head': username + ':' + srcbranch,
+            'head': sourceuser + ':' + srcbranch,
             'base': targetbranch}
 
     datajson = json.dumps(data)
@@ -106,7 +110,7 @@ def get_credentials():
         if auth:
             response = ''
             while response.lower() not in ('y', 'n'):
-                log.info('Using the following GitHub credentials from '
+                print('Using the following GitHub credentials from '
                       '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
                 response = input(
                     'Use these credentials (if not you will be prompted '
@@ -116,7 +120,7 @@ def get_credentials():
                 password = auth[2]
 
     if not (username and password):
-        log.info("Enter your GitHub username and password so that API "
+        print("Enter your GitHub username and password so that API "
                  "requests aren't as severely rate-limited...")
         username = input('Username: ')
         password = getpass.getpass('Password: ')
@@ -141,6 +145,9 @@ def main(argv=None):
                         default='astropy', help='The name of the repository '
                         'of the issue and code. must have the same name for '
                         'both target and source (default: astropy)')
+    parser.add_argument('--sourceuser', metavar='USER', type=str,
+                        help='The name of the user/organization whose '
+                             'repo/fork the pull request should pull from')
     parser.add_argument('--targetuser', metavar='USER', type=str,
                         default='astropy', help='The name of the '
                         'user/organization the pull request should pull into '
@@ -159,8 +166,8 @@ def main(argv=None):
     print('Converting issue', args.issuenum, 'of', targrepo, 'to pull request')
     print('Will request to pull branch', args.srcbranch, 'of user\'s',
           args.repo, 'repo to branch', args.targbranch, 'of ', targrepo)
-    issue_to_pr(args.issuenum, args.srcbranch, args.repo, args.targetuser,
-                args.targbranch, args.baseurl)
+    issue_to_pr(args.issuenum, args.srcbranch, args.repo, args.sourceuser,
+                args.targetuser, args.targbranch, args.baseurl)
 
 
 if __name__ == '__main__':
