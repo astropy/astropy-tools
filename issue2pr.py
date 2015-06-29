@@ -12,6 +12,7 @@ from __future__ import print_function
 import argparse
 import getpass
 import json
+import netrc
 import sys
 
 try:
@@ -31,12 +32,13 @@ else:
     from urllib import basejoin
 
 
-GH_API_BASE_URL = 'https://api.github.com'
+GITHUB_API_HOST = 'api.github.com'
+GITHUB_API_BASE_URL = 'https://{0}/repos/'.format(GITHUB_API_HOST)
 
 
 def issue_to_pr(issuenum, srcbranch, repo='astropy', sourceuser='',
                 targetuser='astropy', targetbranch='master',
-                baseurl=GH_API_BASE_URL):
+                baseurl=GITHUB_API_BASE_URL):
     """
     Attaches code to an issue, converting a regular issue into a pull request.
 
@@ -83,8 +85,10 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', sourceuser='',
     """
 
     while not sourceuser:
-        sourceuser = raw_input('Enter GitHub username to create pull '
-                               'request from: ')
+        sourceuser = raw_input('Enter GitHub username to create pull request '
+                               'from: ').strip()
+
+    username, password = get_credentials(username=sourceuser)
 
     data = {'issue': str(issuenum),
             'head': sourceuser + ':' + srcbranch,
@@ -92,15 +96,13 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', sourceuser='',
 
     datajson = json.dumps(data)
 
-    suburl = 'repos/{user}/{repo}/pulls'.format(user=targetuser, repo=repo)
+    suburl = '{user}/{repo}/pulls'.format(user=targetuser, repo=repo)
     url = basejoin(baseurl, suburl)
-    res = requests.post(url, data=datajson, auth=get_credentials())
+    res = requests.post(url, data=datajson, auth=(username, password))
     return res.json()
 
 
-def get_credentials():
-    username = password = None
-
+def get_credentials(username=None, password=None):
     try:
         my_netrc = netrc.netrc()
     except:
@@ -156,7 +158,7 @@ def main(argv=None):
                         default='master', help='The branch name the pull '
                         'request should be pulled into (default: master)')
     parser.add_argument('--baseurl', metavar='URL', type=str,
-                        default=GH_API_BASE_URL, help='The base '
+                        default=GITHUB_API_BASE_URL, help='The base '
                         'URL for github (default: %(default)s)')
 
     args = parser.parse_args(argv)
