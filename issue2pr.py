@@ -59,13 +59,6 @@ def issue_to_pr(issuenum, srcbranch, repo='astropy', sourceuser='',
     targetbranch : str
         The name of the branch (in `targetuser`/`repo`) that the pull request
         should merge into.
-    username : str or None
-        The name of the user sourcing the pull request.  If None, the caller
-        will be prompted for their name at the terminal.
-    pw : str or None
-        The password of the user sourcing the pull request.  If None, the
-       caller will be prompted for their name at the terminal (text will be
-       hidden).
    baseurl : str
        The URL to use to access the github site (including protocol).
 
