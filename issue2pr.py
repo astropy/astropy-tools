@@ -114,10 +114,14 @@ def get_credentials(username=None, password=None):
                 username = auth[0]
                 password = auth[2]
 
-    if not (username and password):
+    if not (username or password):
         print("Enter your GitHub username and password so that API "
                  "requests aren't as severely rate-limited...")
-        username = input('Username: ')
+        username = raw_input('Username: ')
+        password = getpass.getpass('Password: ')
+    elif not password:
+        print("Enter your GitHub password so that API "
+                 "requests aren't as severely rate-limited...")
         password = getpass.getpass('Password: ')
 
     return username, password
