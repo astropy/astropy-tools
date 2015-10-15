@@ -188,6 +188,10 @@ class GithubSuggestBackports(object):
 
         return self._github_repo_request('commits', sha=sha)
 
+    def get_comparison(self, base, head):
+        return self._github_repo_request('compare',
+                                         '{0}...{1}'.format(base, head))
+
     def get_commit(self, sha):
         """Return a single commit."""
 
@@ -219,22 +223,30 @@ class GithubSuggestBackports(object):
             raise
         return pr
 
-    def find_merged_commit(self, commit, since=None):
+    def find_merged_commit(self, commit, since=None, compare_master=False):
         """
         Determines whether or not this commit was already merged into the
         release branch, and if so returns the merge commit from the branch.
         Returns `None` if the commit was not found to be merged.
         """
 
+        if compare_master:
+            def get_first_commits():
+                return self.get_comparison('master', self.branch)['commits']
+        else:
+            def get_first_commits():
+                return self.get_commits(self.branch)
+
         def expand_cache():
             if not self._cached_commits:
                 # Initialize with the first page of commits from the bug fix
                 # branch
-                next_commits = self.get_commits(self.branch)
+                next_commits = get_first_commits()
             else:
                 last_commit = self._cached_commits[-1]
                 if last_commit['commit']['committer']['date'] <= since:
                     return False
+                # If we need to paginate we just follow the last commit...
                 next_commits = self.get_commits(last_commit['sha'])[1:]
             if next_commits:
                 self._cached_commits.extend(next_commits)
@@ -297,22 +309,53 @@ class GithubSuggestBackports(object):
                       reverse=True)
         branch_base_ver_name = self.branch.lstrip('v').rstrip('.x')
 
-        # Get the last tag that should be in this branch
-        for tag in tags:
-            tag_ver_name = tag['name'].lstrip('v')
-            if tag_ver_name.startswith(branch_base_ver_name):
-                self._last_tag = tag
-                break
-        else:
-            self._last_tag = False
-        return self._last_tag
+        def search_tags_matching(base):
+            # Get the last tag that should be in this branch
+            for tag in tags:
+                tag_ver_name = tag['name'].lstrip('v')
+                if tag_ver_name.startswith(base):
+                    return tag
+            else:
+                return None
 
+        last_tag = search_tags_matching(branch_base_ver_name)
+        is_prev_tag = False
+
+        if last_tag is None:
+            # No tags have been made from this branch yet.  So search back to
+            # the last minor version tag.  This will be slow, but most
+            # comprehensive.
+            parts = branch_base_ver_name.split('.')
+            if parts[-1] == '0':
+                if parts[0] == '1':
+                    parts = ['0', '1']
+                else:
+                    parts = [str(int(parts[0] - 1)), '0']
+            else:
+                parts = parts[:-1] + [str(int(parts[-1]) - 1)]
+            prev_branch_ver_name = '.'.join(parts)
+            last_tag = search_tags_matching(prev_branch_ver_name)
+            is_prev_tag = True
+
+        if last_tag is None:
+            # If it's still not found then just mark this as False so
+            # we can stop looking
+            last_tag = False
+
+        self._last_tag = (last_tag, is_prev_tag)
+
+        # Hack--return whether not a tag of a previous release was returned
+        # instead of the actual last tag
+        # I need this to fix an issue with searching for changes on a branch
+        # with no tags made from it yet, but in the long term this should be
+        # refactored
+        return last_tag, is_prev_tag
 
     _last_tag_commit = None
     def get_last_tag_commit(self):
         if self._last_tag_commit is not None:
             return self._last_tag_commit
-        last_tag = self.get_last_tag()
+        last_tag = self.get_last_tag()[0]
         if last_tag:
             last_tag_commit = self.get_commit(last_tag['commit']['sha'])
         else:
@@ -331,9 +374,10 @@ class GithubSuggestBackports(object):
                  'git cherry-pick -m 1 <SHA>"'.format(self.branch))
         last_tag_commit = self.get_last_tag_commit()
 
-        if not last_tag_commit:
-            # There have *been* no tags of this release line so just quit
-            raise StopIteration
+        # There have *been* no tags of this release line so we just compare the
+        # release branch against master (to see what commits have been made to
+        # master since the release branch was started)
+        compare_master = self.get_last_tag()[1]
 
         last_tag_date = last_tag_commit['commit']['committer']['date']
 
@@ -357,7 +401,8 @@ class GithubSuggestBackports(object):
                 continue
 
             if not self.find_merged_commit(merge_commit,
-                                           since=last_tag_date):
+                                           since=last_tag_date,
+                                           compare_master=compare_master):
                 yield pr, merge_commit['sha']
 
 
