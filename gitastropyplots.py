@@ -52,6 +52,9 @@ def parse_git_log(fn='gitlogstats', recentfirst=False, cumlines=False):
 
         dellns = 0
         for l in lns:
+            if len(l.split('\t')) != 3:
+                #print('skipping "{0}"'.format(l))
+                continue
             add, sub, filename = l.split('\t')
             dellns += int(add.replace('-', '0')) - int(sub.replace('-', '0'))
         deltalines.append(dellns)
@@ -70,14 +73,15 @@ def parse_git_log(fn='gitlogstats', recentfirst=False, cumlines=False):
     return tuple([a[sorti] for a in (authors, datetimes, deltalines)])
 
 
-def loc_plot():
+def loc_plot(yrlabels=None):
     from datetime import datetime
 
     authors, datetimes, nlines = parse_git_log(cumlines=True, recentfirst=False)
 
     plt.plot(datetimes, nlines, lw=2)
 
-    yrlabels = [2011, 2012, 2013, 2014]
+    if yrlabels is None:
+        yrlabels = np.arange((datetime.today().year - 2011) + 1) + 2011
 
     plt.xticks([datetime(yr, 1, 1) for yr in yrlabels], yrlabels, fontsize=20)
     plt.ylabel('Lines of Code', fontsize=30)
@@ -85,14 +89,16 @@ def loc_plot():
     plt.tight_layout()
 
 
-def commits_plot():
+def commits_plot(yrlabels=None):
     from datetime import datetime
 
     authors, datetimes, deltalines = parse_git_log(recentfirst=False)
 
     plt.plot(datetimes, np.arange(len(datetimes)) + 1, lw=2)
 
-    yrlabels = [2011, 2012, 2013, 2014]
+    if yrlabels is None:
+        yrlabels = np.arange((datetime.today().year - 2011) + 1) + 2011
+
 
     plt.xticks([datetime(yr, 1, 1) for yr in yrlabels], yrlabels, fontsize=20)
     plt.ylabel('Number of Commits', fontsize=30)
@@ -111,7 +117,7 @@ def get_first_commit_map():
     return firstcommit
 
 
-def commiters_plot():
+def commiters_plot(yrlabels=None):
     from datetime import datetime
 
     firstcommit = get_first_commit_map()
@@ -120,7 +126,8 @@ def commiters_plot():
 
     plt.plot(dts, np.arange(len(dts)) + 1, lw=2)
 
-    yrlabels = [2011, 2012, 2013, 2014]
+    if yrlabels is None:
+        yrlabels = np.arange((datetime.today().year - 2011) + 1) + 2011
 
     plt.xticks([datetime(yr, 1, 1) for yr in yrlabels], yrlabels, fontsize=20)
     plt.ylabel('# of Code Contributors', fontsize=30)
