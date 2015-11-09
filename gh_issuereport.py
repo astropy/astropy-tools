@@ -60,6 +60,9 @@ def count_issues_since(dt, repo, auth=None, verbose=True, cacheto=None):
         url = GH_API_BASE_URL + '/repos/' + repo + '/issues?per_page=100&state=all'
 
         req = requests.get(url, auth=auth)
+        if not req.ok:
+            msg = 'Failed to access github API for repo using url {}. {}: {}: {}'
+            raise requests.HTTPError(msg.format(url, req.status_code, req.reason, req.text))
         isslst = paginate_list_request(req, verbose, auth=auth)
         if cacheto:
             with open(cacheto, 'w') as f:
