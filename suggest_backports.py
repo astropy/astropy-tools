@@ -74,10 +74,11 @@ class GithubSuggestBackports(object):
     # re-request them for each pull request
     _cached_commits = []
 
-    def __init__(self, owner, repo, branch, username=None, password=None):
+    def __init__(self, owner, repo, branch, username=None, password=None, milestone=None):
         self.owner = owner
         self.repo = repo
         self.branch = branch
+        self.milestone = milestone
         if username is not None and password is not None:
             # We can't rely on urllib2 to handle basic authentication in the
             # normal way since GitHub requests don't always have
@@ -299,6 +300,13 @@ class GithubSuggestBackports(object):
         sort_key = lambda m: int(m['title'].rsplit('.', 1)[1])
         return sorted(milestones, key=sort_key)[0]
 
+    def get_milestone(self, target_milestone):
+        milestones = self.get_milestones(state='all')
+        for milestone in milestones:
+            if milestone['title'] == target_milestone:
+                return milestone
+        raise ValueError("No milestone found with the name {0}".format(target_milestone))
+
     _last_tag = None
     def get_last_tag(self):
         if self._last_tag is not None:
@@ -364,9 +372,11 @@ class GithubSuggestBackports(object):
         self._last_tag_commit = last_tag_commit
         return last_tag_commit
 
-
     def iter_suggested_prs(self):
-        next_milestone = self.get_next_milestone()
+        if self.milestone is None:
+            next_milestone = self.get_next_milestone()
+        else:
+            next_milestone = self.get_milestone(self.milestone)
         next_ms_num = next_milestone['number']
         log.info("Finding PRs in milestone {0} that haven't been merged into "
                  "{1}".format(next_milestone['title'], self.branch))
@@ -447,6 +457,11 @@ def main(argv=None):
     parser.add_argument('-f', '--file', metavar='FILE',
                         help='save the cherry-pick script to a file; '
                              'otherwise it is written to stdout')
+    parser.add_argument('-m', '--milestone',
+                        help='milestone in which to search for milestones '
+                             'to backport. By default, this is the next '
+                             'open milestone that has the same (major, minor) '
+                             'version')
     parser.add_argument('--debug', action='store_true')
 
     args = parser.parse_args(argv)
@@ -468,7 +483,7 @@ def main(argv=None):
 
     # Try reading a local .netrc file for the required credentials
     suggester = GithubSuggestBackports(args.owner, args.repo, args.branch,
-                                       username, password)
+                                       username, password, milestone=args.milestone)
 
     pr_format = '[#{0}][{1}]: {2}'
     suggestions = []
