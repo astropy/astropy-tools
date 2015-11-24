@@ -177,7 +177,11 @@ def main(argv=None):
     else:
         icache = prcache = None
 
+    if args.verbose:
+        print('Counting issues')
     icnt = count_issues_since(pkgdt, args.repo, auth=auth, verbose=args.verbose, cacheto=icache)
+    if args.verbose:
+        print('Counting PRs')
     prcnt = count_prs_since(pkgdt, args.repo, auth=auth, verbose=args.verbose, cacheto=prcache)
 
     print(icnt['opened'], 'issues opened since', args.package, 'and', icnt['closed'], 'issues closed')
