@@ -142,9 +142,10 @@ def get_datetime_of_pypi_version(pkg, version):
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('repo', help='the github repo to use')
+    parser.add_argument('repo', help='the github repo to use', metavar='<repo>')
     parser.add_argument('package', help='the package/version to lookup on pypi '
-                                        'or "None" to skip the lookup')
+                                        'or "None" to skip the lookup',
+                                   metavar='<package>/<version>')
 
     parser.add_argument('-q', '--quiet', help='hide informational messages',
                                          dest='verbose', action='store_false')
