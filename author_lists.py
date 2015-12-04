@@ -53,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--bullets', action='store_true')
     parser.add_argument('-t', '--html', action='store_true')
     parser.add_argument('-m', '--mailmap-info', action='store_true', help='include a commit history useful for populating the mailmap for the repos.')
+    parser.add_argument('-l', '--last-name', action='store_true', help='sort on last name')
 
     args = parser.parse_args()
 
@@ -61,7 +62,13 @@ if __name__ == '__main__':
     names = []
     for namelist in namedct.values():
         names.extend(namelist)
-    unames = sorted(set(names))
+
+    unames = set(names)
+    if args.last_name:
+        unames = sorted(set(names), key=lambda n:n.split()[-1])
+    else:
+        unames = sorted(set(names))
+
 
     outlines = []
 
