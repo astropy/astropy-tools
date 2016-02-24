@@ -41,3 +41,7 @@ htmlcov
 
 # PyCharm
 .idea
+
+# data that might get saved if you run the scripts
+issues.json
+prs.json
