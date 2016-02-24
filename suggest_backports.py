@@ -74,11 +74,12 @@ class GithubSuggestBackports(object):
     # re-request them for each pull request
     _cached_commits = []
 
-    def __init__(self, owner, repo, branch, username=None, password=None, milestone=None):
+    def __init__(self, owner, repo, branch, username=None, password=None,
+                 milestones=None):
         self.owner = owner
         self.repo = repo
         self.branch = branch
-        self.milestone = milestone
+        self.milestones = milestones
         if username is not None and password is not None:
             # We can't rely on urllib2 to handle basic authentication in the
             # normal way since GitHub requests don't always have
@@ -373,47 +374,49 @@ class GithubSuggestBackports(object):
         return last_tag_commit
 
     def iter_suggested_prs(self):
-        if self.milestone is None:
-            next_milestone = self.get_next_milestone()
+        if self.milestones is None:
+            milestones_to_check = [self.get_next_milestone()]
         else:
-            next_milestone = self.get_milestone(self.milestone)
-        next_ms_num = next_milestone['number']
-        log.info("Finding PRs in milestone {0} that haven't been merged into "
-                 "{1}".format(next_milestone['title'], self.branch))
-        log.info('Merge these into {0} by doing "git checkout {0}; git pull; '
-                 'git cherry-pick -m 1 <SHA>"'.format(self.branch))
-        last_tag_commit = self.get_last_tag_commit()
+            milestones_to_check = [self.get_milestone(ms) for ms in self.milestones]
 
-        # There have *been* no tags of this release line so we just compare the
-        # release branch against master (to see what commits have been made to
-        # master since the release branch was started)
-        compare_master = self.get_last_tag()[1]
+        for milestone in milestones_to_check:
+            ms_num = milestone['number']
+            log.info("Finding PRs in milestone {0} that haven't been merged into "
+                     "{1}".format(milestone['title'], self.branch))
+            log.info('Merge these into {0} by doing "git checkout {0}; git pull; '
+                     'git cherry-pick -m 1 <SHA>"'.format(self.branch))
+            last_tag_commit = self.get_last_tag_commit()
 
-        last_tag_date = last_tag_commit['commit']['committer']['date']
+            # There have *been* no tags of this release line so we just compare the
+            # release branch against master (to see what commits have been made to
+            # master since the release branch was started)
+            compare_master = self.get_last_tag()[1]
 
-        # Get the issue #s of all closed issues in the relevant milestone
-        milestone_issues = set(issue['number'] for issue in
-                               self.iter_issues(milestone=next_ms_num,
-                                                state='closed'))
+            last_tag_date = last_tag_commit['commit']['committer']['date']
 
-        # Now get all PRs and filter by whether or not they belong to the
-        # milestone; requesting them all at once is still faster than
-        # requesting one at a time. This would also be easier if the API
-        # supported sorting on PR lists
-        for pr in self.iter_pull_requests(state='closed'):
-            if (pr['number'] not in milestone_issues or not pr['merged_at']):
-                continue
+            # Get the issue #s of all closed issues in the relevant milestone
+            milestone_issues = set(issue['number'] for issue in
+                                   self.iter_issues(milestone=ms_num,
+                                                    state='closed'))
 
-            merge_commit = self.get_pull_request_merge_commit(pr['number'])
+            # Now get all PRs and filter by whether or not they belong to the
+            # milestone; requesting them all at once is still faster than
+            # requesting one at a time. This would also be easier if the API
+            # supported sorting on PR lists
+            for pr in self.iter_pull_requests(state='closed'):
+                if (pr['number'] not in milestone_issues or not pr['merged_at']):
+                    continue
 
-            # Ignore commits that were merged before the last tag date
-            if merge_commit['commit']['committer']['date'] < last_tag_date:
-                continue
+                merge_commit = self.get_pull_request_merge_commit(pr['number'])
 
-            if not self.find_merged_commit(merge_commit,
-                                           since=last_tag_date,
-                                           compare_master=compare_master):
-                yield pr, merge_commit['sha']
+                # Ignore commits that were merged before the last tag date
+                if merge_commit['commit']['committer']['date'] < last_tag_date:
+                    continue
+
+                if not self.find_merged_commit(merge_commit,
+                                               since=last_tag_date,
+                                               compare_master=compare_master):
+                    yield pr, merge_commit['sha']
 
 
 def get_credentials():
@@ -457,11 +460,11 @@ def main(argv=None):
     parser.add_argument('-f', '--file', metavar='FILE',
                         help='save the cherry-pick script to a file; '
                              'otherwise it is written to stdout')
-    parser.add_argument('-m', '--milestone',
-                        help='milestone in which to search for milestones '
+    parser.add_argument('-m', '--milestones',
+                        help='milestones in which to search for milestones '
                              'to backport. By default, this is the next '
                              'open milestone that has the same (major, minor) '
-                             'version')
+                             'version.  Can be a comma-separated list.')
     parser.add_argument('--debug', action='store_true')
 
     args = parser.parse_args(argv)
@@ -481,9 +484,11 @@ def main(argv=None):
 
     username, password = get_credentials()
 
+    milestones = None if args.milestones is None else args.milestones.split(',')
+
     # Try reading a local .netrc file for the required credentials
     suggester = GithubSuggestBackports(args.owner, args.repo, args.branch,
-                                       username, password, milestone=args.milestone)
+                                      username, password, milestones=milestones)
 
     pr_format = '[#{0}][{1}]: {2}'
     suggestions = []
