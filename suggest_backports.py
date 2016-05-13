@@ -12,11 +12,9 @@ from __future__ import unicode_literals
 
 import argparse
 import base64
-import getpass
 import io
 import json
 import logging
-import netrc
 import os
 import re
 import stat
@@ -39,10 +37,10 @@ except NameError:
 # Because pkg_resources provides better version parsing than distutils
 import pkg_resources
 
+from common import GITHUB_API_HOST, get_credentials
 
 # In principle these should be configurable for projects on enterprise GitHub
 # hosts, but right now we're only using it with the public GitHub.
-GITHUB_API_HOST = 'api.github.com'
 BASE_URL = 'https://{0}/repos/'.format(GITHUB_API_HOST)
 
 # This regex ensures that only the 'Conflicts:' section at the end of the
@@ -418,35 +416,6 @@ class GithubSuggestBackports(object):
                                                compare_master=compare_master):
                     yield pr, merge_commit['sha']
 
-
-def get_credentials():
-    username = password = None
-
-    try:
-        my_netrc = netrc.netrc()
-    except:
-        pass
-    else:
-        auth = my_netrc.authenticators(GITHUB_API_HOST)
-        if auth:
-            response = ''
-            while response.lower() not in ('y', 'n'):
-                log.info('Using the following GitHub credentials from '
-                      '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
-                response = input(
-                    'Use these credentials (if not you will be prompted '
-                    'for new credentials)? [Y/n] ')
-            if response.lower() == 'y':
-                username = auth[0]
-                password = auth[2]
-
-    if not (username and password):
-        log.info("Enter your GitHub username and password so that API "
-                 "requests aren't as severely rate-limited...")
-        username = input('Username: ')
-        password = getpass.getpass('Password: ')
-
-    return username, password
 
 def main(argv=None):
     parser = argparse.ArgumentParser(
