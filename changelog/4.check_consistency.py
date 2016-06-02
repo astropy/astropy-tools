@@ -30,12 +30,12 @@ BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x', 'v1.0.x', 'v1.1.x', 'v1.2.x'
 # branch.
 
 BRANCH_CLOSED = {
-    'v0.1.x': '2012-06-19T02:09:53',
-    'v0.2.x': '2013-10-25T12:29:58',
-    'v0.3.x': '2014-05-13T12:06:04',
-    'v0.4.x': '2015-05-29T15:44:38',
+    'v0.1.x': parse_isoformat('2012-06-19T02:09:53'),
+    'v0.2.x': parse_isoformat('2013-10-25T12:29:58'),
+    'v0.3.x': parse_isoformat('2014-05-13T12:06:04'),
+    'v0.4.x': parse_isoformat('2015-05-29T15:44:38'),
     'v1.0.x': None,
-    'v1.1.x': '2016-03-10T01:09:50',
+    'v1.1.x': parse_isoformat('2016-03-10T01:09:50'),
     'v1.2.x': None
 }
 
@@ -86,7 +86,9 @@ with open('pull_requests_branches.json') as merged:
 
 for pr in sorted(merged_prs, key=lambda x: int(x)):
 
-    if parse_isoformat(merged_prs[pr]['merged']) < START:
+    merge_date = parse_isoformat(merged_prs[pr]['merged'])
+
+    if merge_date < START:
         continue
 
     if pr in CLOSED_BY_ANOTHER:
@@ -167,7 +169,10 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
                         status.append(('Pull request was not included in branch {0} (but whitelisted as ok)'.format(BRANCHES[i]), VALID))
                     else:
                         if BRANCH_CLOSED[BRANCHES[i]] is not None:
-                            status.append(('Pull request was not included in branch {0} (but too late to fix)'.format(BRANCHES[i]), CANTFIX))
+                            if merge_date > BRANCH_CLOSED[BRANCHES[i]]:
+                                status.append(('Pull request was not included in branch {0} (but was merged after branch closed)'.format(BRANCHES[i]), VALID))
+                            else:
+                                status.append(('Pull request was not included in branch {0} (but too late to fix)'.format(BRANCHES[i]), CANTFIX))
                         else:
                             status.append(('Pull request was not included in branch {0}'.format(BRANCHES[i]), INVALID))
 
