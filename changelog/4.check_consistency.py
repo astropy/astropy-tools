@@ -1,10 +1,11 @@
-import re
-import os
+# This script takes the JSON files from the three previous scripts and runs
+# a whole bunch of consistency checks described in the comments below.
+
 import json
 from datetime import datetime
-import subprocess
 
 from astropy.utils.console import color_print
+
 
 def parse_isoformat(string):
     return datetime.strptime(string, "%Y-%m-%dT%H:%M:%S")
@@ -13,11 +14,20 @@ def parse_isoformat(string):
 # and time at which the v1.0.x branch was created.
 START = parse_isoformat('2015-01-27T16:22:59')
 
+# The following option can be toggled to show only pull requests with issues or
+# show all pull requests.
 SHOW_VALID = False
+
+# The following colors are used to make the output more readabale. CANTFIX is
+# used for things that are issues that can never be resolved.
 VALID = 'green'
 CANTFIX = 'yellow'
 INVALID = 'red'
 BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x', 'v1.0.x', 'v1.1.x', 'v1.2.x']
+
+# The following gives the dates when branches were closed. This helps us
+# understand later whether a pull request could have been backported to a given
+# branch.
 
 BRANCH_CLOSED = {
     'v0.1.x': '2012-06-19T02:09:53',
@@ -29,27 +39,41 @@ BRANCH_CLOSED = {
     'v1.2.x': None
 }
 
-# TODO: find a more future-proof way of including manual merges
+# We now list some exceptions, starting with manual merges. This gives for the
+# specified pull requests the list of branches in which the pull request was
+# merged (but which won't show up in the JSON file giving branches for each pull
+# request). These pull requests were merged manually without preserving a merge
+# commit that includes the pull request number.
+
+# TODO: find a more future-proof way of including manual merges. At the moment,
+#       when we add new branches, we'll need to add these branches to all
+#       existing manual merges.
+
 MANUAL_MERGES = {
-                 '4792':('v1.2.x',),
-                 '4539':('v1.0.x',),
-                 '4423':('v1.2.x',),
-                 '4341':('v1.1.x',),
-                 '4254':('v1.0.x',),
-                 '4719':('v1.2.x',),
-                 '4201':('v1.0.x', 'v1.1.x', 'v1.2.x')
-                 }
+    '4792': ('v1.2.x',),
+    '4539': ('v1.0.x',),
+    '4423': ('v1.2.x',),
+    '4341': ('v1.1.x',),
+    '4254': ('v1.0.x',),
+    '4719': ('v1.2.x',),
+    '4201': ('v1.0.x', 'v1.1.x', 'v1.2.x')
+}
+
+# The following gives pull requests we know are missing from certain branches
+# and which we will never be able to backport since those branches are closed.
 
 EXPECTED_MISSING = {
-                    '4266':('v1.1.x',),  # Forgot to backport to v1.1.x
-                    }
+    '4266': ('v1.1.x',),  # Forgot to backport to v1.1.x
+}
 
-# PRs closed by another PR being merged, so these can be ignored in the
-# consistency checks.
+# The following pull requests appear as merged on GitHub but were actually
+# marked as merged by another pull request getting merge and including a
+# superset of the original commits.
+
 CLOSED_BY_ANOTHER = {
-                    '3624':'3697',
-                    '2676':'2680'
-                    }
+    '3624': '3697',
+    '2676': '2680'
+}
 
 with open('merged_pull_requests.json') as merged:
     merged_prs = json.load(merged)
@@ -76,20 +100,15 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
     cl_version = changelog_prs.get(pr, None)
     branches = pr_branches.get(pr, [])
 
-
-
-    # Check that it appears in the correct version in the changelog
-
     status = []
-
     valid = True
 
-    # Check whether affects-dev label is present. If so, the PR should not be
-    # in the changelog.
+    # Make sure that the milestone is consistent with the changelog section, and
+    # that this is also consistent with the labels set on the pull request.
 
     if pr in changelog_prs:
         if 'Affects-dev' in labels:
-            pass
+            pass  # don't print for now since there are too many
             # status.append(('Labelled as affects-dev but in changelog ({0})'.format(cl_version), INVALID))
         elif 'no-changelog-entry-needed' in labels:
             status.append(('Labelled as no-changelog-entry-needed but in changelog', INVALID))
@@ -102,7 +121,7 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
                 status.append(('Milestone is {0} but change log section is {1}'.format(milestone, cl_version), INVALID))
     else:
         if 'Affects-dev' in labels:
-            pass
+            pass  # don't print for now since there are too many
             # status.append(('Labelled as affects-dev and not in changelog', VALID))
         elif 'no-changelog-entry-needed' in labels:
             status.append(('Labelled as no-changelog-entry-needed and not in changelog', VALID))
@@ -113,7 +132,7 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
                 if milestone.startswith('v0.1'):
                     status.append(('Not in changelog (but ok since milestoned as {0})'.format(milestone), VALID))
                 else:
-                    pass
+                    pass  # don't print for now since there are too many
                     # status.append(('Not in changelog (milestoned as {0}) but not labelled as affects-dev'.format(milestone), INVALID))
 
     # Now check for consistency between PR milestone and branch in which the PR
@@ -122,6 +141,7 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
     # can rerun this and check for errors below.
 
     if milestone is not None:
+
         earliest_expected_branch = milestone[0:4] + '.x'
 
         if earliest_expected_branch in BRANCHES:
@@ -141,7 +161,7 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
                 if BRANCHES[i] in branches:
                     status.append(('Pull request was included in branch {0}'.format(BRANCHES[i]), VALID))
                 else:
-                    if BRANCHES[i] in MANUAL_MERGES.get(pr,[]):
+                    if BRANCHES[i] in MANUAL_MERGES.get(pr, []):
                         status.append(('Pull request was included in branch {0} (manually merged)'.format(BRANCHES[i]), VALID))
                     elif BRANCHES[i] in EXPECTED_MISSING.get(pr, []):
                         status.append(('Pull request was not included in branch {0} (but whitelisted as ok)'.format(BRANCHES[i]), VALID))
@@ -156,6 +176,7 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
 
     # If SHOW_VALID is False, we want to skip entries which are all valid.
     # Otherwise we want to show both valid and invalid entries.
+
     if not SHOW_VALID:
         for msg in status:
             if 'red' in msg:

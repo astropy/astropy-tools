@@ -1,3 +1,10 @@
+# The purpose of this script is to download information about all pull requests
+# merged into the master branch of the astropy repository. This information is
+# downloaded to a JSON file. This includes the 'last modified' date for all pull
+# requests, so that when the script is re-run, only modified or new entries are
+# downloaded. At this time, this script requires the developer version of the
+# pygithub package.
+
 import os
 import json
 
@@ -10,10 +17,11 @@ from common import get_credentials
 def parse_isoformat(string):
     return datetime.strptime(string, "%Y-%m-%dT%H:%M:%S")
 
+REPOSITORY = 'astropy/astropy'
 
+# Get handle to repository
 g = Github(*get_credentials())
-
-repo = g.get_organization('astropy').get_repo('astropy')
+repo = g.get_repo(REPOSITORY)
 
 # We continue from an existing file rather than starting from scratch. To start
 # from scratch, just remove the JSON file
@@ -22,6 +30,9 @@ if os.path.exists('merged_pull_requests.json'):
         pull_requests = json.load(merged)
 else:
     pull_requests = {}
+
+# We enclose the following code in a try...finally so that if the updating
+# crashes, we still write out what we had.
 
 try:
 

@@ -1,4 +1,12 @@
+# The purpose of this script is to check all the maintenance branches of the
+# core astropy repository, and find which pull requests are included in which
+# branches. The output is a JSON file that contains for each pull request the
+# list of all branches in which it is included. We look specifically for the
+# message "Merge pull request #xxxx " in commit messages, so this is not
+# completely foolproof, but seems to work for now.
+
 import os
+import json
 import subprocess
 import tempfile
 from collections import defaultdict
@@ -12,10 +20,10 @@ TMPDIR = tempfile.mkdtemp()
 STARTDIR = os.path.abspath('.')
 
 # The branches we are interested in
-BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x', 'v1.0.x', 'v1.1.x', 'v1.2.x']
+BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
+            'v1.0.x', 'v1.1.x', 'v1.2.x']
 
 # Read in a list of all the PRs
-import json
 with open('merged_pull_requests.json') as merged:
     merged_prs = json.load(merged)
 

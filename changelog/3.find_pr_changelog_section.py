@@ -1,9 +1,11 @@
+# The purpose of this script is to search through the latest changelog to find
+# for each pull request what section of the changelog the pull request is
+# mentioned in. The output is a JSON file that contains for each pull request
+# the changelog section.
+
 import re
-import os
 import json
-import zipfile
 import tempfile
-import subprocess
 
 import requests
 
@@ -37,7 +39,7 @@ for line in requests.get(CHANGELOG).text.splitlines():
             for pr in find_prs_in_changelog(content):
                 changelog_prs[pr] = version
         version = previous.strip().split('(')[0].strip()
-        if not 'v' in version:
+        if 'v' not in version:
             version = 'v' + version
         content = ''
     elif version is not None:
