@@ -1,6 +1,15 @@
 #!/usr/bin/env python
 from __future__ import print_function
 
+"""
+A script to generate a changelog section for a new version of astropy.
+Use like:
+
+$ python add_to_changelog.py ../astropy/CHANGES.rst v1.2
+
+And it will print out a new changelog section for v1.2
+"""
+
 import re
 import argparse
 
