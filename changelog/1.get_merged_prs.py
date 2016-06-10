@@ -62,7 +62,8 @@ try:
                                          'title': pr.title,
                                          'labels': labels,
                                          'merged': pr.merged_at.isoformat(),
-                                         'updated': pr.updated_at.isoformat()}
+                                         'updated': pr.updated_at.isoformat(),
+                                         'merge_commit': pr.merge_commit_sha}
 
 finally:
 
