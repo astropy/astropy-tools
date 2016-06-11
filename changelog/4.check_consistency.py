@@ -3,6 +3,7 @@
 
 import json
 from datetime import datetime
+from collections import defaultdict
 
 from astropy.utils.console import color_print
 
@@ -84,7 +85,9 @@ with open('pull_requests_changelog_sections.json') as merged:
 with open('pull_requests_branches.json') as merged:
     pr_branches = json.load(merged)
 
-for pr in sorted(merged_prs, key=lambda x: int(x)):
+backports = defaultdict(list)
+
+for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 
     merge_date = parse_isoformat(merged_prs[pr]['merged'])
 
@@ -174,7 +177,8 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
                             else:
                                 status.append(('Pull request was not included in branch {0} (but too late to fix)'.format(BRANCHES[i]), CANTFIX))
                         else:
-                            status.append(('Pull request was not included in branch {0}'.format(BRANCHES[i]), INVALID))
+                            status.append(('Pull request was not included in branch {0}. You can backport it with:'.format(BRANCHES[i]), INVALID))
+                            backports[BRANCHES[i]].append(merged_prs[pr]['merge_commit'])
 
         else:
             pass  # no branch for this milestone yet
@@ -184,11 +188,18 @@ for pr in sorted(merged_prs, key=lambda x: int(x)):
 
     if not SHOW_VALID:
         for msg in status:
-            if 'red' in msg:
+            if INVALID in msg:
                 break
         else:
             continue
 
+    color_print('Main report:', 'blue')
     print("#{0} (Milestone: {1})".format(pr, milestone))
     for msg in status:
         color_print('  - ', '', *msg)
+
+    for version in backports.keys():
+        color_print('Backports to {0} (in merge order)'.format(version), 'blue')
+        for commit in backports[version]:
+            print('git cherry-pick -m 1 {0}'.format(commit))
+            
