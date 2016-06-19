@@ -30,6 +30,7 @@ import datetime
 from getpass import getpass
 
 import requests
+from six import moves
 
 GH_API_BASE_URL = 'https://api.github.com'
 ISO_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -165,7 +166,7 @@ def main(argv=None):
         if args.verbose:
             print('Found PyPI entry for', args.package, ':', pkgdt)
 
-    un = raw_input('Github username (blank for no auth): ')
+    un = moves.input('Github username (blank for no auth): ')
     if un:
         auth = (un, getpass())
     else:
