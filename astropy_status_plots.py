@@ -25,7 +25,7 @@ def generate_commit_stats_file(fn='gitlogstats', overwrite=False, dirtorunin=Non
 
         cmd = 'git log --numstat --use-mailmap --format=format:"COMMIT,%H,%at,%aN"'.split()
         output = subprocess.check_output(cmd, cwd=dirtorunin)
-        with open(fn, 'w') as f:
+        with open(fn, 'wb') as f:
             f.write(output)
         return output
 
@@ -123,7 +123,7 @@ def commiters_plot(yrlabels=None, **plotkws):
 
     firstcommit = get_first_commit_map()
 
-    dts = np.sort(firstcommit.values())
+    dts = np.sort(list(firstcommit.values()))
 
     plotkws.setdefault('lw', 2)
     plt.plot(dts, np.arange(len(dts)) + 1, **plotkws)
