@@ -7,7 +7,12 @@ Use like:
 
 $ python add_to_changelog.py ../astropy/CHANGES.rst v1.2
 
-And it will print out a new changelog section for v1.2
+And it will print out a new changelog section for v1.2.
+
+Note that this uses the CHANGES.rst that's the first argument to figure out what
+all the sections are that should go in the new changelog.  So be sure it points
+to a CHANGES.rst that's up-to-date with all the sections the new version should
+have.
 """
 
 import re
@@ -66,7 +71,8 @@ def find_all_package_sections(fn):
 
 
 def main(argv=None):
-    parser = argparse.ArgumentParser(description='Print out the')
+    parser = argparse.ArgumentParser(description='Print out the changelog for '
+                                                 'a new version of Astropy.')
     parser.add_argument('changelog', help='path to the changelog to use as a '
                                           'template')
     parser.add_argument('version', help='the new version to generate the '
