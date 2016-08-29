@@ -71,6 +71,10 @@ def main(argv=None):
                                           'template')
     parser.add_argument('version', help='the new version to generate the '
                                         'changelog for')
+    parser.add_argument('--write', '-w', action='store_true', help='update the '
+                                         'referenced changelog (the first '
+                                         'argument) to include the generated '
+                                         'changelog at the top.')
 
     args = parser.parse_args(argv)
 
@@ -82,6 +86,14 @@ def main(argv=None):
     new_changelog = NEW_CHANGELOG_TEMPLATE.format(newvers=args.version,
                                                   newvers_head='-'*len(args.version),
                                                   package_list=pkg_list_str)
+    if args.write:
+        with open(args.changelog) as f:
+            old_changelog = f.read()
+        with open(args.changelog, 'w') as fw:
+            fw.write(new_changelog)
+            fw.write('\n')
+            fw.write(old_changelog)
+
     print(new_changelog)
 
 if __name__ == '__main__':
