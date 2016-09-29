@@ -1,3 +1,10 @@
+# IMPORTANT: The purpose of this script is to update the astropy-helpers
+# submodule in all affiliated packages (and a few other packages) that make use
+# of the astropy-helpers. This script is not intended to be run by affiliated
+# package maintainers, and should only be run with approval of both the
+# astropy-helpers and package-template lead maintainers, once an
+# astropy-helpers release has been made.
+
 import os
 import netrc
 import shutil
