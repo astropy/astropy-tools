@@ -7,7 +7,7 @@ import subprocess
 import requests
 from github import Github
 
-HELPERS_TAG = 'v1.1.2'
+HELPERS_TAG = 'v1.2'
 BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
 
 GITHUB_API_HOST = 'api.github.com'
@@ -16,6 +16,7 @@ username, _, password = my_netrc.authenticators(GITHUB_API_HOST)[:3]
 gh = Github(username, password)
 user = gh.get_user()
 
+
 def run_command(command):
     print('-' * 72)
     print("Running '{0}'".format(command))
@@ -23,11 +24,13 @@ def run_command(command):
     if ret != 0:
         raise Exception("Command '{0}' failed".format(command))
 
+
 def ensure_fork_exists(repo):
     if repo.owner.login != user.login:
         return user.create_fork(repo)
     else:
         return repo
+
 
 def open_pull_request(fork, repo):
 
@@ -85,26 +88,43 @@ def open_pull_request(fork, repo):
     print(tmpdir)
 
     repo.create_pull(title='Update astropy-helpers to {0}'.format(HELPERS_TAG),
-                     body='This is an automated update of the astropy-helpers submodule to {0}. This includes both the update of the astropy-helpers sub-module, and the ``ah_bootstrap.py`` file, if needed.\n\n*This is intended to be helpful, but if you would prefer to manage these updates yourself, or if you notice any issues with this automated update, please let @astrofrog know!*'.format(HELPERS_TAG),
+                     body='This is an automated update of the astropy-helpers '
+                          'submodule to {0}. This includes both the update of '
+                          'the astropy-helpers sub-module, and the '
+                          '``ah_bootstrap.py`` file, if needed.\n\n*This is '
+                          'intended to be helpful, but if you would prefer to '
+                          'manage these updates yourself, or if you notice any '
+                          'issues with this automated update, please let '
+                          '@astrofrog know!*'.format(HELPERS_TAG),
                      base='master',
                      head='{0}:{1}'.format(fork.owner.login, BRANCH))
 
 START_DIR = os.path.abspath('.')
 
 registry = requests.get("http://astropy.org/affiliated/registry.json").json()
-for package in registry['packages']:
 
+repositories = []
+for package in registry['packages']:
     if not 'github' in package['repo_url']:
         continue
-
     owner, repository = package['repo_url'].split('/')[-2:]
     if '.git' in repository:
         repository = repository.replace('.git', '')
+    repositories.append((owner, repository))
 
+# Add a few repositories manually on request
+repositories.extend([('chandra-marx', 'marxs'),
+                     ('hamogu', 'astrospec'),
+                     ('hamogu', 'psfsubtraction'),
+                     ('astropy', 'regions'),
+                     ('astropy', 'package-template')])
+
+# Remove duplicates
+repositories = sorted(set(repositories))
+
+for owner, repository in repositories:
     repo = gh.get_repo("{0}/{1}".format(owner, repository))
-
     fork = ensure_fork_exists(repo)
-
     try:
         open_pull_request(fork, repo)
     except:
