@@ -24,7 +24,8 @@ for root, dirs, files in os.walk(args.dir):
             lines = fd.readlines()
 
         with open(path, 'wb') as fd:
-            if not lines[0].startswith("# Licensed under a 3-clause BSD style license - see LICENSE.rst"):
+            if not (lines[0].startswith("# Licensed under a 3-clause BSD style license - see LICENSE.rst")
+                    or lines[1].startswith("# Licensed under a 3-clause BSD style license - see LICENSE.rst")):
                 print('Re-writing license')
                 fd.write("# Licensed under a 3-clause BSD style license - see LICENSE.rst\n")
                 fd.write("from __future__ import (absolute_import, division, print_function, unicode_literals)\n")
