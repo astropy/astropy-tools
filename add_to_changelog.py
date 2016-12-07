@@ -80,7 +80,11 @@ def main(argv=None):
     parser.add_argument('--write', '-w', action='store_true', help='update the '
                                          'referenced changelog (the first '
                                          'argument) to include the generated '
-                                         'changelog at the top.')
+                                         'changelog at the top (or if -l is '
+                                         'set, it determines the location).')
+    parser.add_argument('--last-version', '-l', help='The name of the version '
+                       'that this changelog entry should precede.  If not '
+                       'given, this changelog will go at the top', default='')
 
     args = parser.parse_args(argv)
 
@@ -93,12 +97,30 @@ def main(argv=None):
                                                   newvers_head='-'*len(args.version),
                                                   package_list=pkg_list_str)
     if args.write:
-        with open(args.changelog) as f:
-            old_changelog = f.read()
+        with open(args.changelog) as fr:
+            old_changelog = fr.read()
         with open(args.changelog, 'w') as fw:
-            fw.write(new_changelog)
-            fw.write('\n')
-            fw.write(old_changelog)
+            if args.last_version:
+                header_match = None
+                for l in old_changelog.split('\n'):
+                    if args.last_version + ' (' in l:
+                        header_match = l + '\n'
+                    elif header_match:
+                        if '-'*len(args.last_version) in l:
+                            fw.write('\n\n')
+                            fw.write(new_changelog)
+                            fw.write('\n\n\n')
+                        fw.write(header_match)
+                        fw.write(l)
+                        fw.write('\n')
+                        header_match = None
+                    else:
+                        fw.write(l)
+                        fw.write('\n')
+            else:
+                fw.write(new_changelog)
+                fw.write('\n\n\n')
+                fw.write(old_changelog)
 
     print(new_changelog)
 
