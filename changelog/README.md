@@ -135,3 +135,15 @@ Finally, we run the script to check the consistency of all the information:
 
 If you want to see all results even pull requests that are valid, you can change
 ``SHOW_VALID`` to ``True`` in ``4.check_consistency.py ``.
+
+Updating for New Branches
+-------------------------
+
+When you add a new branch to these scripts, it is important to add the new 
+branch name in *both* of these:
+
+* ``2.find_pr_branches.py``
+* ``4.check_consistency.py``
+
+Additionally, in ``4.check_consistency.py`` you'll need to add the branch to
+the ``BRANCH_CLOSED`` dictionary.

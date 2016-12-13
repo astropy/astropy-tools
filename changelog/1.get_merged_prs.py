@@ -35,19 +35,20 @@ else:
 # crashes, we still write out what we had.
 
 try:
-
+    max_issues = repo.get_issues(state='all',sort='created')[0].number
+    i = 0
     for pr in repo.get_pulls(state='closed', sort='updated', direction='desc', base='master'):
-
+        i += 1
         if not pr.merged:
             continue
 
         if str(pr.number) in pull_requests:
             if pr.updated_at > parse_isoformat(pull_requests[str(pr.number)]['updated']):
-                print("Updating entry for pull request #{0}".format(pr.number))
+                print("Updating entry for pull request #{} ({} of max {})".format(pr.number, i, max_issues))
             else:
                 break
         else:
-            print("Fetching new entry for pull request #{0}".format(pr.number))
+            print("Fetching new entry for pull request #{} ({} of max {})".format(pr.number, i, max_issues))
 
         if pr.milestone is None:
             milestone = None
@@ -63,6 +64,7 @@ try:
                                          'labels': labels,
                                          'merged': pr.merged_at.isoformat(),
                                          'updated': pr.updated_at.isoformat(),
+                                         'created': pr.created_at.isoformat(),
                                          'merge_commit': pr.merge_commit_sha}
 
 finally:
