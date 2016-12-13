@@ -4,6 +4,7 @@
 import json
 from datetime import datetime
 from collections import defaultdict
+import webbrowser
 
 from astropy.utils.console import color_print
 
@@ -19,12 +20,17 @@ START = parse_isoformat('2015-01-27T16:22:59')
 # show all pull requests.
 SHOW_VALID = False
 
+# The repository to show the URL for easy access to PR changelogs.  Can be None
+# To not show the url
+SHOW_URL_REPO = 'astropy/astropy'
+
 # The following colors are used to make the output more readabale. CANTFIX is
 # used for things that are issues that can never be resolved.
 VALID = 'green'
 CANTFIX = 'yellow'
 INVALID = 'red'
-BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x', 'v1.0.x', 'v1.1.x', 'v1.2.x']
+BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x', 'v1.0.x', 'v1.1.x',
+            'v1.2.x', 'v1.3.x']
 
 # The following gives the dates when branches were closed. This helps us
 # understand later whether a pull request could have been backported to a given
@@ -37,7 +43,8 @@ BRANCH_CLOSED = {
     'v0.4.x': parse_isoformat('2015-05-29T15:44:38'),
     'v1.0.x': None,
     'v1.1.x': parse_isoformat('2016-03-10T01:09:50'),
-    'v1.2.x': None
+    'v1.2.x': None,
+    'v1.3.x': None
 }
 
 # We now list some exceptions, starting with manual merges. This gives for the
@@ -194,12 +201,15 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
             continue
 
     color_print('Main report:', 'blue')
-    print("#{0} (Milestone: {1})".format(pr, milestone))
+    url = ''
+    if SHOW_URL_REPO:
+        url = ' (https://github.com/{}/issues/{})'.format(SHOW_URL_REPO, pr)
+    print("#{0}{2} (Milestone: {1})".format(pr, milestone, url))
     for msg in status:
         color_print('  - ', '', *msg)
 
-    for version in backports.keys():
-        color_print('Backports to {0} (in merge order)'.format(version), 'blue')
-        for commit in backports[version]:
-            print('git cherry-pick -m 1 {0}'.format(commit))
-            
+for version in backports.keys():
+    color_print('Backports to {0} (in merge order)'.format(version), 'blue')
+    for commit in backports[version]:
+        print('git cherry-pick -m 1 {0}'.format(commit))
+

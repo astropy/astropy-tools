@@ -21,7 +21,7 @@ STARTDIR = os.path.abspath('.')
 
 # The branches we are interested in
 BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
-            'v1.0.x', 'v1.1.x', 'v1.2.x']
+            'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x']
 
 # Read in a list of all the PRs
 with open('merged_pull_requests.json') as merged:
