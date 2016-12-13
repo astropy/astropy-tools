@@ -4,7 +4,6 @@
 import json
 from datetime import datetime
 from collections import defaultdict
-import webbrowser
 
 from astropy.utils.console import color_print
 
@@ -94,7 +93,14 @@ with open('pull_requests_branches.json') as merged:
 
 backports = defaultdict(list)
 
+color_print('Main report:', 'blue')
+
 for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
+
+    if 'unusual-merge-dealt-with' in merged_prs[pr]['labels']:
+        # This label indicates problematic PRs that have been checked
+        # manually and don't need to be considered here.
+        continue
 
     merge_date = parse_isoformat(merged_prs[pr]['merged'])
 
@@ -184,8 +190,8 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
                             else:
                                 status.append(('Pull request was not included in branch {0} (but too late to fix)'.format(BRANCHES[i]), CANTFIX))
                         else:
-                            status.append(('Pull request was not included in branch {0}. You can backport it with:'.format(BRANCHES[i]), INVALID))
-                            backports[BRANCHES[i]].append(merged_prs[pr]['merge_commit'])
+                            status.append(('Pull request was not included in branch {0}. Backport command included below.'.format(BRANCHES[i]), INVALID))
+                            backports[BRANCHES[i]].append(pr)
 
         else:
             pass  # no branch for this milestone yet
@@ -200,7 +206,6 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
         else:
             continue
 
-    color_print('Main report:', 'blue')
     url = ''
     if SHOW_URL_REPO:
         url = ' (https://github.com/{}/issues/{})'.format(SHOW_URL_REPO, pr)
@@ -208,8 +213,8 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
     for msg in status:
         color_print('  - ', '', *msg)
 
-for version in backports.keys():
+for version in sorted(backports.keys()):
     color_print('Backports to {0} (in merge order)'.format(version), 'blue')
-    for commit in backports[version]:
-        print('git cherry-pick -m 1 {0}'.format(commit))
-
+    for pr in backports[version]:
+        print('# Pull request #{0}: {1}'.format(pr, merged_prs[pr]['title']))
+        print('git cherry-pick -m 1 {0}'.format(merged_prs[pr]['merge_commit']))
