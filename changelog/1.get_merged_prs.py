@@ -19,7 +19,7 @@ def parse_isoformat(string):
 
 REPOSITORY = 'astropy/astropy'
 
-YESTERDAY = datetime(2016, 12, 13, 0, 0, 0)
+YESTERDAY = datetime.now()-timedelta(1)
 
 # Get handle to repository
 g = Github(*get_credentials())
