@@ -8,7 +8,7 @@
 import os
 import json
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from github import Github
 
 from common import get_credentials
@@ -18,8 +18,6 @@ def parse_isoformat(string):
     return datetime.strptime(string, "%Y-%m-%dT%H:%M:%S")
 
 REPOSITORY = 'astropy/astropy'
-
-YESTERDAY = datetime.now()-timedelta(1)
 
 # Get handle to repository
 g = Github(*get_credentials())
