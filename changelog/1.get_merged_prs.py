@@ -8,7 +8,7 @@
 import os
 import json
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from github import Github
 
 from common import get_credentials
