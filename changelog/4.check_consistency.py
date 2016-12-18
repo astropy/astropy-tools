@@ -235,8 +235,13 @@ for version in sorted(backports.keys()):
         print('These are in merge order:')
         print('<pre>')
         for pr in backports[version]:
-            print('# Pull request #{0}: {1}'.format(pr, merged_prs[pr]['title']))
-            print('git cherry-pick -m 1 {0}'.format(merged_prs[pr]['merge_commit']))
+            prorurl = '#{}'.format('pr')
+            if SHOW_URL_REPO:
+                url = 'https://github.com/{}/issues/{}'.format(SHOW_URL_REPO, pr)
+                prorurl = '<a href="{}">#{}</a>'.format(url, pr)
+
+            print('# Pull request {}: {}'.format(prorurl, merged_prs[pr]['title']))
+            print('git cherry-pick -m 1 {}'.format(merged_prs[pr]['merge_commit']))
         print('</pre>')
     else:
         color_print('Backports to {0} (in merge order)'.format(version), 'blue')
