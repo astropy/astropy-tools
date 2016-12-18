@@ -16,7 +16,7 @@ from astropy.utils.console import color_print
 REPOSITORY = 'git://github.com/astropy/astropy.git'
 NAME = os.path.basename(REPOSITORY).replace('.git', '')
 
-TMPDIR = tempfile.mkdtemp()
+DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain the clone between runs
 STARTDIR = os.path.abspath('.')
 
 # The branches we are interested in
@@ -35,18 +35,26 @@ try:
 
     # Set up repository
     color_print('Cloning {0}'.format(REPOSITORY), 'green')
-    os.chdir(TMPDIR)
-    subprocess.call('git clone {0}'.format(REPOSITORY), shell=True)
-    os.chdir(NAME)
+    os.chdir(DIRTOCLONEIN)
+    if os.path.isdir(NAME):
+        # already exists... assume its the right thing
+        color_print('"{}" directory already exists - assuming it is an already '
+                    'existing clone, so just fetching origin'.format(NAME), 'yellow')
+        os.chdir(NAME)
+        subprocess.call('git fetch origin', shell=True)
+    else:
+        subprocess.call('git clone {0}'.format(REPOSITORY), shell=True)
+        os.chdir(NAME)
 
     # Loop over branches and find all PRs in the branch
     for branch in BRANCHES:
 
         # Change branch
         color_print('Switching to branch {0}'.format(branch), 'green')
-        subprocess.call('git reset --hard', shell=True)
+        subprocess.call('git reset --hard'.format(), shell=True)
         subprocess.call('git clean -fxd', shell=True)
         subprocess.call('git checkout {0}'.format(branch), shell=True)
+        subprocess.call('git reset --hard origin/{}'.format(branch), shell=True)
 
         # Extract entire log
         log = subprocess.check_output('git log --first-parent', shell=True).decode('utf-8')
