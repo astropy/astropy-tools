@@ -13,14 +13,14 @@ def get_credentials(username=None, password=None):
     else:
         auth = my_netrc.authenticators(GITHUB_API_HOST)
         if auth:
-            response = ''
-            while response.lower() not in ('y', 'n'):
+            response = 'NONE'  # to allow enter to be default Y
+            while response.lower() not in ('y', 'n', ''):
                 print('Using the following GitHub credentials from '
                       '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
                 response = input(
                     'Use these credentials (if not you will be prompted '
                     'for new credentials)? [Y/n] ')
-            if response.lower() == 'y':
+            if response.lower() == 'y' or response == '':
                 username = auth[0]
                 password = auth[2]
 
