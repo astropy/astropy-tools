@@ -19,6 +19,10 @@ START = parse_isoformat('2015-01-27T16:22:59')
 # show all pull requests.
 SHOW_VALID = False
 
+# If set to true, the output is suitable for viewing as a web page instead of
+# in the console
+HTML_OUTPUT = True
+
 # The repository to show the URL for easy access to PR changelogs.  Can be None
 # To not show the url
 SHOW_URL_REPO = 'astropy/astropy'
@@ -91,9 +95,13 @@ with open('pull_requests_changelog_sections.json') as merged:
 with open('pull_requests_branches.json') as merged:
     pr_branches = json.load(merged)
 
-backports = defaultdict(list)
 
-color_print('Main report:', 'blue')
+if HTML_OUTPUT:
+    print('<!DOCTYPE html>\n<title>Astropy Consistency Check Report</title>\n\n<h1>Main report</h1>')
+else:
+    color_print('Main report:', 'blue')
+
+backports = defaultdict(list)
 
 for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 
@@ -208,13 +216,30 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 
     url = ''
     if SHOW_URL_REPO:
-        url = ' (https://github.com/{}/issues/{})'.format(SHOW_URL_REPO, pr)
-    print("#{0}{2} (Milestone: {1})".format(pr, milestone, url))
-    for msg in status:
-        color_print('  - ', '', *msg)
+        url = 'https://github.com/{}/issues/{}'.format(SHOW_URL_REPO, pr)
+    if HTML_OUTPUT:
+        print('<p>')
+        print('<a href="{2}">#{0}</a> (Milestone: {1})'.format(pr, milestone, url))
+        print('<ul>')
+        for msg, color in status:
+            print('<li style="color:{color};">{msg}</li>'.format(msg=msg, color=color))
+        print('</ul>\n</p>')
+    else:
+        print("#{0}{2} (Milestone: {1})".format(pr, milestone, ' ('+url+')'))
+        for msg in status:
+            color_print('  - ', '', *msg)
 
 for version in sorted(backports.keys()):
-    color_print('Backports to {0} (in merge order)'.format(version), 'blue')
-    for pr in backports[version]:
-        print('# Pull request #{0}: {1}'.format(pr, merged_prs[pr]['title']))
-        print('git cherry-pick -m 1 {0}'.format(merged_prs[pr]['merge_commit']))
+    if HTML_OUTPUT:
+        print('<h1>Backports to {}</h1>'.format(version))
+        print('These are in merge order:')
+        print('<pre>')
+        for pr in backports[version]:
+            print('# Pull request #{0}: {1}'.format(pr, merged_prs[pr]['title']))
+            print('git cherry-pick -m 1 {0}'.format(merged_prs[pr]['merge_commit']))
+        print('</pre>')
+    else:
+        color_print('Backports to {0} (in merge order)'.format(version), 'blue')
+        for pr in backports[version]:
+            print('# Pull request #{0}: {1}'.format(pr, merged_prs[pr]['title']))
+            print('git cherry-pick -m 1 {0}'.format(merged_prs[pr]['merge_commit']))
