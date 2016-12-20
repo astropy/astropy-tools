@@ -14,7 +14,7 @@ import subprocess
 import requests
 from github import Github
 
-HELPERS_TAG = 'v1.2'
+HELPERS_TAG = 'v1.3'
 BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
 
 GITHUB_API_HOST = 'api.github.com'
@@ -94,6 +94,11 @@ def open_pull_request(fork, repo):
 
     print(tmpdir)
 
+    report_user = '@astrofrog'
+
+    if username != 'astrofrog':
+        report_user = '@{} or @astrofrog'.format(username)
+
     repo.create_pull(title='Update astropy-helpers to {0}'.format(HELPERS_TAG),
                      body='This is an automated update of the astropy-helpers '
                           'submodule to {0}. This includes both the update of '
@@ -102,7 +107,7 @@ def open_pull_request(fork, repo):
                           'intended to be helpful, but if you would prefer to '
                           'manage these updates yourself, or if you notice any '
                           'issues with this automated update, please let '
-                          '@astrofrog know!*'.format(HELPERS_TAG),
+                          '{1} know!*'.format(HELPERS_TAG, report_user),
                      base='master',
                      head='{0}:{1}'.format(fork.owner.login, BRANCH))
 
@@ -112,7 +117,7 @@ registry = requests.get("http://astropy.org/affiliated/registry.json").json()
 
 repositories = []
 for package in registry['packages']:
-    if not 'github' in package['repo_url']:
+    if 'github' not in package['repo_url']:
         continue
     owner, repository = package['repo_url'].split('/')[-2:]
     if '.git' in repository:
