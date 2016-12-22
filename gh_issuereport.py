@@ -27,7 +27,7 @@ import os
 import json
 import datetime
 
-from getpass import getpass
+from common import get_credentials
 
 import requests
 from six import moves
@@ -166,11 +166,7 @@ def main(argv=None):
         if args.verbose:
             print('Found PyPI entry for', args.package, ':', pkgdt)
 
-    un = moves.input('Github username (blank for no auth): ')
-    if un:
-        auth = (un, getpass())
-    else:
-        auth = None
+    auth = get_credentials()
 
     if args.cache:
         icache = 'issues.json'
