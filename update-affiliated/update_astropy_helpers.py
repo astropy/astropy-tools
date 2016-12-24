@@ -124,7 +124,8 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('hamogu', 'astrospec'),
                      ('hamogu', 'psfsubtraction'),
                      ('astropy', 'regions'),
-                     ('astropy', 'package-template')])
+                     ('astropy', 'package-template'),
+                     ('sunpy', 'sunpy')])
 
 # Remove duplicates
 repositories = sorted(set(repositories))
