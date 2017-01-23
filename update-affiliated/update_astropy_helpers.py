@@ -23,6 +23,9 @@ username, _, password = my_netrc.authenticators(GITHUB_API_HOST)[:3]
 gh = Github(username, password)
 user = gh.get_user()
 
+# Open updates for all packages that are found on Github to use astropy-helpers
+SEARCH_ON_GITHUB = True
+
 
 def run_command(command):
     print('-' * 72)
@@ -106,13 +109,27 @@ def open_pull_request(fork, repo):
                      base='master',
                      head='{0}:{1}'.format(fork.owner.login, BRANCH))
 
+
+def repositories_from_gh_search(query='filename:.gitmodules astropy_helpers'):
+    repositories_from_gh = []
+
+    search_results = gh.search_code(query)
+    for result in search_results:
+        owner, repository = result.repository.full_name.split('/')
+        repositories_from_gh.append((owner, repository))
+
+    return repositories_from_gh
+
+
+# Make sure we always include the official affiliated packages in the update
+
 START_DIR = os.path.abspath('.')
 
 registry = requests.get("http://astropy.org/affiliated/registry.json").json()
 
 repositories = []
 for package in registry['packages']:
-    if not 'github' in package['repo_url']:
+    if 'github' not in package['repo_url']:
         continue
     owner, repository = package['repo_url'].split('/')[-2:]
     if '.git' in repository:
@@ -129,8 +146,19 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('chianti-atomic', 'ChiantiPy'),
                      ('pyspeckit', 'pyspeckit')])
 
+# Add Github search results
+
+if SEARCH_ON_GITHUB:
+    repositories.extend(repositories_from_gh_search())
+
 # Remove duplicates
 repositories = sorted(set(repositories))
+
+# Remove repositories that requested it
+repositories_to_remove = set([])
+
+repositories = sorted(set(repositories).difference(repositories_to_remove))
+
 
 for owner, repository in repositories:
     repo = gh.get_repo("{0}/{1}".format(owner, repository))
