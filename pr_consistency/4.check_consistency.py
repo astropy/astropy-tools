@@ -59,7 +59,7 @@ BRANCH_CLOSED = {
     'v0.4.x': parse_isoformat('2015-05-29T15:44:38'),
     'v1.0.x': None,
     'v1.1.x': parse_isoformat('2016-03-10T01:09:50'),
-    'v1.2.x': None,
+    'v1.2.x': parse_isoformat('2016-12-23T05:32:04'),
     'v1.3.x': None
 }
 
