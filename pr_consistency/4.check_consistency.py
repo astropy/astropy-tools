@@ -161,8 +161,7 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
                 status.append(('Milestone is {0} but change log section is {1}'.format(milestone, cl_version), INVALID))
     else:
         if 'Affects-dev' in labels:
-            pass  # don't print for now since there are too many
-            # status.append(('Labelled as affects-dev and not in changelog', VALID))
+            status.append(('Labelled as affects-dev and not in changelog', VALID))
         elif 'no-changelog-entry-needed' in labels:
             status.append(('Labelled as no-changelog-entry-needed and not in changelog', VALID))
         else:
@@ -172,8 +171,7 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
                 if milestone.startswith('v0.1'):
                     status.append(('Not in changelog (but ok since milestoned as {0})'.format(milestone), VALID))
                 else:
-                    pass  # don't print for now since there are too many
-                    # status.append(('Not in changelog (milestoned as {0}) but not labelled as affects-dev'.format(milestone), INVALID))
+                    status.append(('Not in changelog (milestoned as {0}) but not labelled as affects-dev'.format(milestone), INVALID))
 
     # Now check for consistency between PR milestone and branch in which the PR
     # appears - can only check this if the PR milestone is set. If it isn't
