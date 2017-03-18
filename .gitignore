@@ -1,7 +1,7 @@
 # Script generated files
-merged_pull_requests.json
-pull_requests_branches.json
-pull_requests_changelog_sections.json
+merged_pull_requests*.json
+pull_requests_branches*.json
+pull_requests_changelog_sections*.json
 consistency.html
 
 # Compiled files
