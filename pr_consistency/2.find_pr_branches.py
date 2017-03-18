@@ -1,11 +1,12 @@
 # The purpose of this script is to check all the maintenance branches of the
-# core astropy repository, and find which pull requests are included in which
+# given repository, and find which pull requests are included in which
 # branches. The output is a JSON file that contains for each pull request the
 # list of all branches in which it is included. We look specifically for the
 # message "Merge pull request #xxxx " in commit messages, so this is not
 # completely foolproof, but seems to work for now.
 
 import os
+import sys
 import json
 import subprocess
 import tempfile
@@ -13,8 +14,17 @@ from collections import defaultdict
 
 from astropy.utils.console import color_print
 
-REPOSITORY = 'git://github.com/astropy/astropy.git'
-NAME = os.path.basename(REPOSITORY).replace('.git', '')
+if sys.argv[1:]:
+    REPOSITORY_NAME = sys.argv[1]
+else:
+    REPOSITORY_NAME = 'astropy/astropy'
+
+print("The repository this script currently works with is '{}'.\n"
+      .format(REPOSITORY_NAME))
+
+
+REPOSITORY = 'git://github.com/{}.git'.format(REPOSITORY_NAME)
+NAME = os.path.basename(REPOSITORY_NAME)
 
 DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain the clone between runs
 STARTDIR = os.path.abspath('.')
@@ -24,7 +34,7 @@ BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
             'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x']
 
 # Read in a list of all the PRs
-with open('merged_pull_requests.json') as merged:
+with open('merged_pull_requests_{}.json'.format(NAME)) as merged:
     merged_prs = json.load(merged)
 
 # Set up a dictionary where each key will be a PR and each value will be a list
@@ -72,5 +82,5 @@ try:
 finally:
     os.chdir(STARTDIR)
 
-with open('pull_requests_branches.json', 'w') as f:
+with open('pull_requests_branches_{}.json'.format(NAME), 'w') as f:
     json.dump(pr_branches, f, sort_keys=True, indent=2)

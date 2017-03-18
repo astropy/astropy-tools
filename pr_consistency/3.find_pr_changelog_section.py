@@ -3,13 +3,25 @@
 # mentioned in. The output is a JSON file that contains for each pull request
 # the changelog section.
 
+import os
 import re
+import sys
 import json
 import tempfile
 
 import requests
 
-CHANGELOG = 'https://raw.githubusercontent.com/astropy/astropy/master/CHANGES.rst'
+if sys.argv[1:]:
+    REPOSITORY = sys.argv[1]
+else:
+    REPOSITORY = 'astropy/astropy'
+
+NAME = os.path.basename(REPOSITORY)
+
+print("The repository this script currently works with is '{}'.\n"
+      .format(REPOSITORY))
+
+CHANGELOG = 'https://raw.githubusercontent.com/{}/master/CHANGES.rst'.format(REPOSITORY)
 TMPDIR = tempfile.mkdtemp()
 
 BLOCK_PATTERN = re.compile('\[#.+\]', flags=re.DOTALL)
@@ -46,5 +58,5 @@ for line in requests.get(CHANGELOG).text.splitlines():
         content += line
     previous = line
 
-with open('pull_requests_changelog_sections.json', 'w') as f:
+with open('pull_requests_changelog_sections_{}.json'.format(NAME), 'w') as f:
     json.dump(changelog_prs, f, sort_keys=True, indent=2)
