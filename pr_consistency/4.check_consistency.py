@@ -1,6 +1,8 @@
 # This script takes the JSON files from the three previous scripts and runs
 # a whole bunch of consistency checks described in the comments below.
 
+import os
+import sys
 import json
 from datetime import datetime
 from collections import defaultdict
@@ -25,7 +27,18 @@ HTML_OUTPUT = True
 
 # The repository to show the URL for easy access to PR changelogs.  Can be None
 # To not show the url
-SHOW_URL_REPO = 'astropy/astropy'
+
+if sys.argv[1:]:
+    REPOSITORY = sys.argv[1]
+else:
+    REPOSITORY = 'astropy/astropy'
+
+print("The repository this script currently works with is '{}'.\n"
+      .format(REPOSITORY))
+
+SHOW_URL_REPO = REPOSITORY
+
+NAME = os.path.basename(REPOSITORY)
 
 # The following colors are used to make the output more readabale. CANTFIX is
 # used for things that are issues that can never be resolved.
@@ -86,18 +99,19 @@ CLOSED_BY_ANOTHER = {
     '2676': '2680'
 }
 
-with open('merged_pull_requests.json') as merged:
+with open('merged_pull_requests_{}.json'.format(NAME)) as merged:
     merged_prs = json.load(merged)
 
-with open('pull_requests_changelog_sections.json') as merged:
+with open('pull_requests_changelog_sections_{}.json'.format(NAME)) as merged:
     changelog_prs = json.load(merged)
 
-with open('pull_requests_branches.json') as merged:
+with open('pull_requests_branches_{}.json'.format(NAME)) as merged:
     pr_branches = json.load(merged)
 
 
 if HTML_OUTPUT:
-    print('<!DOCTYPE html>\n<title>Astropy Consistency Check Report</title>\n\n<h1>Main report</h1>')
+    print('<!DOCTYPE html>\n<title>Astropy Consistency Check Report</title>'
+          '\n\n<h1>Main report for repository {}</h1>'.format(REPOSITORY))
 else:
     color_print('Main report:', 'blue')
 
