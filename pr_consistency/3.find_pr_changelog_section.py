@@ -16,12 +16,17 @@ if sys.argv[1:]:
 else:
     REPOSITORY = 'astropy/astropy'
 
+if sys.argv[2:]:
+    CHANGELOG_NAME = sys.argv[2]
+else:
+    CHANGELOG_NAME = 'CHANGES.rst'
+
 NAME = os.path.basename(REPOSITORY)
 
 print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY))
 
-CHANGELOG = 'https://raw.githubusercontent.com/{}/master/CHANGES.rst'.format(REPOSITORY)
+CHANGELOG = 'https://raw.githubusercontent.com/{}/master/{}'.format(REPOSITORY, CHANGELOG_NAME)
 TMPDIR = tempfile.mkdtemp()
 
 BLOCK_PATTERN = re.compile('\[#.+\]', flags=re.DOTALL)
