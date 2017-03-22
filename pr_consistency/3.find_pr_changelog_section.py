@@ -24,7 +24,7 @@ print("The repository this script currently works with is '{}'.\n"
 CHANGELOG = 'https://raw.githubusercontent.com/{}/master/CHANGES.rst'.format(REPOSITORY)
 TMPDIR = tempfile.mkdtemp()
 
-BLOCK_PATTERN = re.compile('\[#[0-9#, ]+\]')
+BLOCK_PATTERN = re.compile('[[(]#[0-9#, ]+[])]')
 ISSUE_PATTERN = re.compile('#[0-9]+')
 
 
