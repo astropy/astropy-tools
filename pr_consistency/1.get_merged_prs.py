@@ -55,6 +55,9 @@ for pr in pull_requests.values():
 # for pull requests modified within 24 hours of the cutoff.
 if LAST_MODIFIED_DATE is not None:
     LAST_MODIFIED_DATE -= timedelta(hours=24)
+else:
+    # With an empty JSON file, we use the date of PR#1
+    LAST_MODIFIED_DATE = datetime(2014, 6, 13, 1, 48, 44)
 
 print("Last modified date: {0}".format(LAST_MODIFIED_DATE))
 
