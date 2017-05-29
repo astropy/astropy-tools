@@ -57,10 +57,10 @@ BRANCH_CLOSED = {
     'v0.2.x': parse_isoformat('2013-10-25T12:29:58'),
     'v0.3.x': parse_isoformat('2014-05-13T12:06:04'),
     'v0.4.x': parse_isoformat('2015-05-29T15:44:38'),
-    'v1.0.x': None,
+    'v1.0.x': parse_isoformat('2017-05-29T23:44:38'),
     'v1.1.x': parse_isoformat('2016-03-10T01:09:50'),
     'v1.2.x': parse_isoformat('2016-12-23T05:32:04'),
-    'v1.3.x': None
+    'v1.3.x': parse_isoformat('2017-05-29T23:44:38')
 }
 
 # We now list some exceptions, starting with manual merges. This gives for the
