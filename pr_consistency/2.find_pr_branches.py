@@ -14,6 +14,8 @@ from collections import defaultdict
 
 from astropy.utils.console import color_print
 
+from common import branches as br
+
 if sys.argv[1:]:
     REPOSITORY_NAME = sys.argv[1]
 else:
@@ -30,8 +32,7 @@ DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain 
 STARTDIR = os.path.abspath('.')
 
 # The branches we are interested in
-BRANCHES = ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
-            'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x']
+BRANCHES = br(REPOSITORY_NAME)
 
 # Read in a list of all the PRs
 with open('merged_pull_requests_{}.json'.format(NAME)) as merged:
@@ -42,7 +43,6 @@ with open('merged_pull_requests_{}.json'.format(NAME)) as merged:
 pr_branches = defaultdict(list)
 
 try:
-
     # Set up repository
     color_print('Cloning {0}'.format(REPOSITORY), 'green')
     os.chdir(DIRTOCLONEIN)

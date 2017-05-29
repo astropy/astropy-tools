@@ -3,6 +3,11 @@ import getpass
 
 GITHUB_API_HOST = 'api.github.com'
 
+BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
+                                     'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x'],
+                 'astropy/astropy-helpers': ['v0.4.x', 'v1.0.x', 'v1.1.x',
+                                             'v1.2.x', 'v1.3.x']}
+
 
 def get_credentials(username=None, password=None):
 
@@ -35,3 +40,25 @@ def get_credentials(username=None, password=None):
         password = getpass.getpass('Password: ')
 
     return username, password
+
+
+def branches(repo):
+    try:
+        branches = BRANCHES_DICT[repo]
+    except KeyError:
+        print("No branches of interest was defined, using all branches with "
+              "names starting with a number or v[0-9] ")
+
+        from github import Github
+        from common import get_credentials
+        g = Github(*get_credentials())
+        repo = g.get_repo(repo)
+
+        branches = []
+
+        for br in repo.get_branches():
+            if (br.name[0] in '1234567890'
+                    or br.name[0] == 'v' and br.name[1] in '1234567890'):
+                branches.append(br.name)
+
+    return branches
