@@ -12,4 +12,4 @@ else:
 gh = Github()
 repo = gh.get_repo('astropy/astropy')
 pl = repo.get_issues(sort='created', state='all')
-print("Next PR number: {0}".format(pl.get_page(0)[0].number))
+print("Next PR number: {0}".format(pl.get_page(0)[0].number + 1))
