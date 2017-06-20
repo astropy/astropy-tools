@@ -4,9 +4,11 @@ import getpass
 GITHUB_API_HOST = 'api.github.com'
 
 BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
-                                     'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x'],
+                                     'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x',
+                                     'v2.0.x'],
                  'astropy/astropy-helpers': ['v0.4.x', 'v1.0.x', 'v1.1.x',
-                                             'v1.2.x', 'v1.3.x']}
+                                             'v1.2.x', 'v1.3.x',
+                                             'v2.0.x']}
 
 
 def get_credentials(username=None, password=None):
