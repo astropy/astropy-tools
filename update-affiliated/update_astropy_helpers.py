@@ -85,9 +85,11 @@ def open_pull_request(fork, repo):
         return
     os.chdir('..')
     shutil.copy('astropy_helpers/ah_bootstrap.py', 'ah_bootstrap.py')
+    shutil.copy('astropy_helpers/ez_setup.py', 'ez_setup.py')
 
     run_command('git add astropy_helpers')
     run_command('git add ah_bootstrap.py')
+    run_command('git add ez_setup.py')
     run_command('git commit -m "Updated astropy-helpers to {0}"'.format(HELPERS_TAG))
 
     run_command('git push origin {0}'.format(BRANCH))
