@@ -44,7 +44,7 @@ def get_credentials(username=None, password=None):
     return username, password
 
 
-def branches(repo):
+def get_branches(repo):
     try:
         branches = BRANCHES_DICT[repo]
     except KeyError:

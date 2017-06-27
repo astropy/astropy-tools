@@ -14,7 +14,7 @@ from collections import defaultdict
 
 from astropy.utils.console import color_print
 
-from common import branches as br
+from common import get_branches
 
 if sys.argv[1:]:
     REPOSITORY_NAME = sys.argv[1]
@@ -32,7 +32,7 @@ DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain 
 STARTDIR = os.path.abspath('.')
 
 # The branches we are interested in
-BRANCHES = br(REPOSITORY_NAME)
+BRANCHES = get_branches(REPOSITORY_NAME)
 
 # Read in a list of all the PRs
 with open('merged_pull_requests_{}.json'.format(NAME)) as merged:

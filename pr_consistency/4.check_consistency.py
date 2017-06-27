@@ -9,7 +9,7 @@ from collections import defaultdict
 
 from astropy.utils.console import color_print
 
-from common import branches as br
+from common import get_branches
 
 
 def parse_isoformat(string):
@@ -47,7 +47,7 @@ NAME = os.path.basename(REPOSITORY)
 VALID = 'green'
 CANTFIX = 'yellow'
 INVALID = 'red'
-BRANCHES = br(REPOSITORY)
+BRANCHES = get_branches(REPOSITORY)
 
 # The following gives the dates when branches were closed. This helps us
 # understand later whether a pull request could have been backported to a given
