@@ -6,6 +6,7 @@
 # astropy-helpers release has been made.
 
 import os
+import sys
 import netrc
 import shutil
 import tempfile
@@ -14,7 +15,11 @@ import subprocess
 import requests
 from github import Github
 
-HELPERS_TAG = 'v1.3'
+try:
+    HELPERS_TAG = sys.argv[1]
+except IndexError:
+    raise IndexError("Please specify the helpers version as argument")
+    
 BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
 
 GITHUB_API_HOST = 'api.github.com'
@@ -129,7 +134,6 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('hamogu', 'astrospec'),
                      ('hamogu', 'psfsubtraction'),
                      ('astropy', 'regions'),
-                     ('astropy', 'package-template'),
                      ('sunpy', 'sunpy'),
                      ('chianti-atomic', 'ChiantiPy'),
                      ('pyspeckit', 'pyspeckit')])
