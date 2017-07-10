@@ -132,6 +132,8 @@ for package in registry['packages']:
 # Add a few repositories manually on request
 repositories.extend([('chandra-marx', 'marxs'),
                      ('hamogu', 'astrospec'),
+                     ('hamogu', 'arcus'),
+                     ('hamogu', 'marxs-lynx'),
                      ('hamogu', 'psfsubtraction'),
                      ('astropy', 'regions'),
                      ('astropy', 'astropy-healpix'),
