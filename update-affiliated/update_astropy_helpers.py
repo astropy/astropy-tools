@@ -138,6 +138,8 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('chianti-atomic', 'ChiantiPy'),
                      ('pyspeckit', 'pyspeckit')])
 
+repositories.remove(('astrofrog', 'wcsaxes'))
+
 # Remove duplicates
 repositories = sorted(set(repositories))
 
