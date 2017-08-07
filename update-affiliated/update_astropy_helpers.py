@@ -136,7 +136,12 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('astropy', 'regions'),
                      ('sunpy', 'sunpy'),
                      ('chianti-atomic', 'ChiantiPy'),
-                     ('pyspeckit', 'pyspeckit')])
+                     ('pyspeckit', 'pyspeckit'),
+                     ('spacetelescope', 'astroimtools'),
+                     ('spacetelescope', 'synphot_refactor'),
+                     ('spacetelescope', 'stsynphot_refactor'),
+                     ('spacetelescope', 'stginga'),
+                     ('stsci-jwst', 'wss_tools')])
 
 repositories.remove(('astrofrog', 'wcsaxes'))
 
