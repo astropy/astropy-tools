@@ -133,8 +133,18 @@ def commiters_plot(yrlabels=None, **plotkws):
 
     plt.xticks([datetime(yr, 1, 1) for yr in yrlabels], yrlabels, fontsize=20)
 
+    plt.ylim(0, len(dts)+1)
+    plt.xlim(dts[0], dts[-1])
+
+    ytks = [y for y in plt.yticks()[0] if y<plt.ylim()[-1]]
+    if len(dts)+1 not in ytks:
+        ytks.append(len(dts)+1)
+    plt.yticks(ytks, fontsize=20)
+
     plt.ylabel('# of Code Contributors', fontsize=30)
     plt.tight_layout()
+
+    return len(dts)+1
 
 def get_paper_citations(paperbibcode='2013A&A...558A..33A', apikey=None, fields='bibcode,pubdate'):
     """
