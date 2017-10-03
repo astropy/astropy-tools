@@ -144,7 +144,9 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('stsci-jwst', 'wss_tools'),
                      ('StingraySoftware', 'HENDRICS'),
                      ('StingraySoftware', 'stingray'),
-                     ('hipspy', 'hips')])
+                     ('hipspy', 'hips'),
+                     ('desihub', 'specsim'),
+                     ('dkirkby', 'speclite')])
 
 repositories.remove(('astrofrog', 'wcsaxes'))
 
