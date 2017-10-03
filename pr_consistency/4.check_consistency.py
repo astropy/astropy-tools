@@ -76,6 +76,8 @@ BRANCH_CLOSED = {
 #       existing manual merges.
 
 MANUAL_MERGES = {
+    '6605': ('v2.0.x',),
+    '6555': ('v2.0.x',),
     '6423': ('v2.0.x',),
     '4792': ('v1.2.x',),
     '4539': ('v1.0.x',),
