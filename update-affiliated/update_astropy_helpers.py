@@ -19,7 +19,7 @@ try:
     HELPERS_TAG = sys.argv[1]
 except IndexError:
     raise IndexError("Please specify the helpers version as argument")
-    
+
 BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
 
 GITHUB_API_HOST = 'api.github.com'
@@ -134,6 +134,8 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('hamogu', 'astrospec'),
                      ('hamogu', 'psfsubtraction'),
                      ('astropy', 'regions'),
+                     ('astropy', 'astropy-healpix'),
+                     ('astropy', 'saba'),
                      ('sunpy', 'sunpy'),
                      ('chianti-atomic', 'ChiantiPy'),
                      ('pyspeckit', 'pyspeckit'),
@@ -141,9 +143,12 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('spacetelescope', 'synphot_refactor'),
                      ('spacetelescope', 'stsynphot_refactor'),
                      ('spacetelescope', 'stginga'),
-                     ('stsci-jwst', 'wss_tools')])
-
-repositories.remove(('astrofrog', 'wcsaxes'))
+                     ('stsci-jwst', 'wss_tools'),
+                     ('StingraySoftware', 'HENDRICS'),
+                     ('StingraySoftware', 'stingray'),
+                     ('hipspy', 'hips'),
+                     ('desihub', 'specsim'),
+                     ('dkirkby', 'speclite')])
 
 # Remove duplicates
 repositories = sorted(set(repositories))
