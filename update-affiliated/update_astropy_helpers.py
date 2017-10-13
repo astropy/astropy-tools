@@ -134,6 +134,8 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('hamogu', 'astrospec'),
                      ('hamogu', 'psfsubtraction'),
                      ('astropy', 'regions'),
+                     ('astropy', 'astropy-healpix'),
+                     ('astropy', 'saba'),
                      ('sunpy', 'sunpy'),
                      ('chianti-atomic', 'ChiantiPy'),
                      ('pyspeckit', 'pyspeckit'),
@@ -147,8 +149,6 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('hipspy', 'hips'),
                      ('desihub', 'specsim'),
                      ('dkirkby', 'speclite')])
-
-repositories.remove(('astrofrog', 'wcsaxes'))
 
 # Remove duplicates
 repositories = sorted(set(repositories))
