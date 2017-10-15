@@ -6,6 +6,7 @@
 # astropy-helpers release has been made.
 
 import os
+import re
 import sys
 import netrc
 import shutil
@@ -27,6 +28,21 @@ my_netrc = netrc.netrc()
 username, _, password = my_netrc.authenticators(GITHUB_API_HOST)[:3]
 gh = Github(username, password)
 user = gh.get_user()
+
+HELPERS_UPDATE_MESSAGE_BODY = re.sub('(\S+)\n', r'\1 ', """
+This is an automated update of the astropy-helpers submodule to {0}. This
+includes both the update of the astropy-helpers sub-module, and the
+``ah_bootstrap.py`` file, if needed.
+
+
+A full list of changes can be found in the
+[changelog](https://github.com/astropy/astropy-helpers/blob/{0}/CHANGES.rst).
+
+
+*This is intended to be helpful, but if you would prefer to manage these
+updates yourself, or if you notice any issues with this automated update,
+please let {1} know!*
+""").strip()
 
 
 def run_command(command):
@@ -105,16 +121,10 @@ def open_pull_request(fork, repo):
         report_user = '@{} or @astrofrog'.format(username)
 
     repo.create_pull(title='Update astropy-helpers to {0}'.format(HELPERS_TAG),
-                     body='This is an automated update of the astropy-helpers '
-                          'submodule to {0}. This includes both the update of '
-                          'the astropy-helpers sub-module, and the '
-                          '``ah_bootstrap.py`` file, if needed.\n\n*This is '
-                          'intended to be helpful, but if you would prefer to '
-                          'manage these updates yourself, or if you notice any '
-                          'issues with this automated update, please let '
-                          '{1} know!*'.format(HELPERS_TAG, report_user),
+                     body=HELPERS_UPDATE_MESSAGE_BODY.format(HELPERS_TAG, report_user),
                      base='master',
                      head='{0}:{1}'.format(fork.owner.login, BRANCH))
+
 
 START_DIR = os.path.abspath('.')
 
