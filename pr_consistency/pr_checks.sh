@@ -10,7 +10,13 @@ else
     changelog=${CHANGELOG}
 fi
 
-python 1.get_merged_prs.py ${package}
-python 2.find_pr_branches.py ${package}
-python 3.find_pr_changelog_section.py ${package} ${changelog}
-python 4.check_consistency.py ${package} > consistency.html
+if [[ -z $PYEXEC ]]; then
+    pyexec=python
+else
+    pyexec=${PYEXEC}
+fi
+
+pyexec 1.get_merged_prs.py ${package}
+pyexec 2.find_pr_branches.py ${package}
+pyexec 3.find_pr_changelog_section.py ${package} ${changelog}
+pyexec 4.check_consistency.py ${package} > consistency.html
