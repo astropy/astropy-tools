@@ -142,10 +142,13 @@ for package in registry['packages']:
 # Add a few repositories manually on request
 repositories.extend([('chandra-marx', 'marxs'),
                      ('hamogu', 'astrospec'),
+                     ('hamogu', 'arcus'),
+                     ('hamogu', 'marxs-lynx'),
                      ('hamogu', 'psfsubtraction'),
                      ('astropy', 'regions'),
                      ('astropy', 'astropy-healpix'),
                      ('astropy', 'saba'),
+                     ('astropy', 'package-template'),
                      ('sunpy', 'sunpy'),
                      ('chianti-atomic', 'ChiantiPy'),
                      ('pyspeckit', 'pyspeckit'),
@@ -158,7 +161,8 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('StingraySoftware', 'stingray'),
                      ('hipspy', 'hips'),
                      ('desihub', 'specsim'),
-                     ('dkirkby', 'speclite')])
+                     ('dkirkby', 'speclite'),
+                     ('matteobachetti', 'srt-single-dish-tools')])
 
 # Remove duplicates
 repositories = sorted(set(repositories))
