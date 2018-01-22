@@ -1,20 +1,18 @@
-.. Astropy Procedures documentation master file, created by
-   sphinx-quickstart on Mon Jan 22 21:23:58 2018.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to Astropy Procedures's documentation!
-==============================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
-
-
-
-Indices and tables
+Astropy Procedures
 ==================
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+This set of pages describes procedures for various aspect of the Astropy project
+which are not needed by a large number of contributors but which we want to
+document in the open for posterity. For actual developer documentation, see the
+`Developer Documentation
+<http://docs.astropy.org/en/stable/#developer-documentation>`_ section of the
+Astropy docs.
+
+Contents
+--------
+
+.. toctree::
+   :maxdepth: 1
+
+   continuous_integration
+   releasing
