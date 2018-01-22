@@ -15,8 +15,9 @@ from common import get_branches
 def parse_isoformat(string):
     return datetime.strptime(string, "%Y-%m-%dT%H:%M:%S")
 
-# Only consider PRs merged after this date/time. At the moment, this is the date
-# and time at which the v1.0.x branch was created.
+
+# Only consider PRs merged after this date/time. At the moment, this is the
+# date and time at which the v1.0.x branch was created.
 START = parse_isoformat('2015-01-27T16:22:59')
 
 # The following option can be toggled to show only pull requests with issues or
@@ -65,28 +66,36 @@ BRANCH_CLOSED = {
     'v2.0.x': None
 }
 
-# We now list some exceptions, starting with manual merges. This gives for the
-# specified pull requests the list of branches in which the pull request was
-# merged (but which won't show up in the JSON file giving branches for each pull
-# request). These pull requests were merged manually without preserving a merge
-# commit that includes the pull request number.
+# We now list some exceptions, starting with manual merges. This gives for
+# the specified pull requests the list of branches in which the pull request
+# was merged (but which won't show up in the JSON file giving branches for
+# each pull request). These pull requests were merged manually without
+# preserving a merge commit that includes the pull request number.
 
 # TODO: find a more future-proof way of including manual merges. At the moment,
 #       when we add new branches, we'll need to add these branches to all
 #       existing manual merges.
-
-MANUAL_MERGES = {
-    '6605': ('v2.0.x',),
-    '6555': ('v2.0.x',),
-    '6423': ('v2.0.x',),
-    '4792': ('v1.2.x',),
-    '4539': ('v1.0.x',),
-    '4423': ('v1.2.x',),
-    '4341': ('v1.1.x',),
-    '4254': ('v1.0.x',),
-    '4719': ('v1.2.x',),
-    '4201': ('v1.0.x', 'v1.1.x', 'v1.2.x')
+MANUAL_MERGES_DICT = {
+    'astropy/astropy': {'6605': ('v2.0.x',),
+                        '6555': ('v2.0.x',),
+                        '6423': ('v2.0.x',),
+                        '4792': ('v1.2.x',),
+                        '4539': ('v1.0.x',),
+                        '4423': ('v1.2.x',),
+                        '4341': ('v1.1.x',),
+                        '4254': ('v1.0.x',),
+                        '4719': ('v1.2.x',),
+                        '4201': ('v1.0.x', 'v1.1.x', 'v1.2.x')},
+    'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x', 'v3.0.x'),
+                                '172': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x', 'v3.0.x'),
+                                '206': ('v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x', 'v3.0.x'),
+                                '362': ('v2.0.x')}
 }
+
+try:
+    MANUAL_MERGES = MANUAL_MERGES_DICT[REPOSITORY]
+except KeyError:
+    MANUAL_MERGES = {}
 
 # The following gives pull requests we know are missing from certain branches
 # and which we will never be able to backport since those branches are closed.
