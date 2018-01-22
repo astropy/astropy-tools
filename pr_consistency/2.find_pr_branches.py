@@ -29,6 +29,8 @@ REPOSITORY = 'git://github.com/{}.git'.format(REPOSITORY_NAME)
 NAME = os.path.basename(REPOSITORY_NAME)
 
 DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain the clone between runs
+ORIGIN = 'origin'  # set this to None to not fetch anything but rather use the directory as-is.
+
 STARTDIR = os.path.abspath('.')
 
 # The branches we are interested in
@@ -49,9 +51,10 @@ try:
     if os.path.isdir(NAME):
         # already exists... assume its the right thing
         color_print('"{}" directory already exists - assuming it is an already '
-                    'existing clone, so just fetching origin'.format(NAME), 'yellow')
+                    'existing clone'.format(NAME), 'yellow')
         os.chdir(NAME)
-        subprocess.call('git fetch origin', shell=True)
+        if ORIGIN:
+            subprocess.call('git fetch {}'.format(ORIGIN), shell=True)
     else:
         subprocess.call('git clone {0}'.format(REPOSITORY), shell=True)
         os.chdir(NAME)
@@ -64,7 +67,8 @@ try:
         subprocess.call('git reset --hard'.format(), shell=True)
         subprocess.call('git clean -fxd', shell=True)
         subprocess.call('git checkout {0}'.format(branch), shell=True)
-        subprocess.call('git reset --hard origin/{}'.format(branch), shell=True)
+        if ORIGIN:
+            subprocess.call('git reset --hard {}/{}'.format(ORIGIN, branch), shell=True)
 
         # Extract entire log
         log = subprocess.check_output('git log --first-parent', shell=True).decode('utf-8')
