@@ -16,7 +16,7 @@ else
     pyexec=${PYEXEC}
 fi
 
-$pyexec 1.get_merged_prs.py ${package}
-$pyexec 2.find_pr_branches.py ${package}
-$pyexec 3.find_pr_changelog_section.py ${package} ${changelog}
+$pyexec 1.get_merged_prs.py ${package} && \
+$pyexec 2.find_pr_branches.py ${package} && \
+$pyexec 3.find_pr_changelog_section.py ${package} ${changelog} && \
 $pyexec 4.check_consistency.py ${package} > consistency.html
