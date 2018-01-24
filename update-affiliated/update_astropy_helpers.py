@@ -81,7 +81,7 @@ def open_pull_request(fork, repo):
 
     # Update to the latest upstream master
     run_command('git remote add upstream {0}'.format(repo.clone_url))
-    run_command('git fetch upstream')
+    run_command('git fetch upstream master')
     run_command('git checkout upstream/master')
     run_command('git checkout -b {0}'.format(BRANCH))
 
