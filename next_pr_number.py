@@ -15,7 +15,6 @@ else:
 
 gh = GitHub()
 repo = gh.repository(*repository)
-pl = repo.issues(sort='created', state='all')
 for issue in repo.issues(sort='created', state='all'):
     print(issue.number + 1)
     break
