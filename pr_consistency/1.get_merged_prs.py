@@ -2,16 +2,20 @@
 # requests merged into the master branch of the given repository. This
 # information is downloaded to a JSON file. This includes the 'last
 # modified' date for all pull requests, so that when the script is re-run,
-# only modified or new entries are downloaded. At this time, this script
-# requires the developer version of the pygithub package.
+# only modified or new entries are downloaded.
 
 import os
 import sys
 import json
 
 from datetime import datetime, timedelta
-from github import Github
+try:
+    from github3 import GitHub
+    from github3.null import NullObject
+except ImportError:
+    raise ImportError('Please conda or pip install github3.py')
 
+# NOTE: Comment this out if don't need GitHub authentication
 from common import get_credentials
 
 
@@ -31,8 +35,9 @@ print("The repository this script currently works with is '{}'.\n"
 
 
 # Get handle to repository
-g = Github(*get_credentials())
-repo = g.get_repo(REPOSITORY)
+g = GitHub(*get_credentials())  # NOTE: With authentication
+# g = GitHub()  # NOTE: No authentication (has API limit)
+repo = g.repository(*REPOSITORY.split('/'))
 
 # We continue from an existing file rather than starting from scratch. To start
 # from scratch, just remove the JSON file
@@ -67,19 +72,22 @@ print("Last modified date: {0}".format(LAST_MODIFIED_DATE))
 try:
 
     # Find the maximum issue number
-    max_issues = repo.get_issues(state='closed', sort='created')[0].number
+    for issue in repo.issues(state='closed', sort='created'):
+        max_issues = issue.number
+        break
 
     # repo.get_pulls doesn't seem to get quite all available pull requests
     # because state:closed seems to miss some PRs that appear with is:closed
     # so instead we use get_issues and then get the PR objects manually.
     # This allows us to also only iterate over issues that have been updated
     # since a certain time.
-    for i, issue in enumerate(repo.get_issues(since=LAST_MODIFIED_DATE, state='closed')):
+    for i, issue in enumerate(repo.issues(since=LAST_MODIFIED_DATE,
+                                          state='closed')):
 
-        if issue.pull_request is None:
+        pr = issue.pull_request()
+
+        if isinstance(pr, NullObject):
             continue
-
-        pr = repo.get_pull(issue.number)
 
         if not pr.merged:
             continue
@@ -88,21 +96,24 @@ try:
             continue
 
         if str(pr.number) in pull_requests:
-            if pr.updated_at > parse_isoformat(pull_requests[str(pr.number)]['updated']):
-                print("Updating entry for pull request #{} ({} of max {})".format(pr.number, i, max_issues))
+            if (pr.updated_at.replace(tzinfo=None) >
+                    parse_isoformat(pull_requests[str(pr.number)]['updated'])):
+                print("Updating entry for pull request #{} ({} of "
+                      "max {})".format(pr.number, i, max_issues))
             else:
-                print("Entry for pull request #{} is up to date".format(pr.number, i, max_issues))
+                print("Entry for pull request #{} is "
+                      "up to date".format(pr.number, i, max_issues))
         else:
-            print("Fetching new entry for pull request #{} ({} of max {})".format(pr.number, i, max_issues))
+            print("Fetching new entry for pull request "
+                  "#{} ({} of max {})".format(pr.number, i, max_issues))
 
         if pr.milestone is None:
             milestone = None
         else:
-            milestone = pr.milestone.title
+            milestone = pr.milestone['title']
 
         # Get labels
-        issue = repo.get_issue(pr.number)
-        labels = [label.name for label in issue.labels]
+        labels = [label.name for label in issue.labels()]
 
         pull_requests[str(pr.number)] = {'milestone': milestone,
                                          'title': pr.title,

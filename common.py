@@ -51,14 +51,24 @@ def get_branches(repo):
         print("No branches of interest was defined, using all branches with "
               "names starting with a number or v[0-9] ")
 
-        from github import Github
-        from common import get_credentials
-        g = Github(*get_credentials())
-        repo = g.get_repo(repo)
+        try:
+            from github3 import GitHub, AuthenticationFailed
+        except ImportError:
+            raise ImportError('Please conda or pip install github3.py')
+        # from common import get_credentials  # Not needed?
+
+        r_args = repo.split('/')
+
+        try:
+            g = GitHub(*get_credentials())
+            repo = g.repository(*r_args)  # Auth exception is raised here
+        except AuthenticationFailed:  # Try anonymous access
+            g = GitHub()
+            repo = g.repository(*r_args)
 
         branches = []
 
-        for br in repo.get_branches():
+        for br in repo.branches():
             if (br.name[0] in '1234567890'
                     or br.name[0] == 'v' and br.name[1] in '1234567890'):
                 branches.append(br.name)
