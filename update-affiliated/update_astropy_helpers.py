@@ -165,7 +165,8 @@ repositories.extend([('chandra-marx', 'marxs'),
                      ('hipspy', 'hips'),
                      ('desihub', 'specsim'),
                      ('dkirkby', 'speclite'),
-                     ('matteobachetti', 'srt-single-dish-tools')])
+                     ('matteobachetti', 'srt-single-dish-tools'),
+                     ('mhvk', 'baseband')])
 
 # Remove duplicates
 repositories = sorted(set(repositories))
