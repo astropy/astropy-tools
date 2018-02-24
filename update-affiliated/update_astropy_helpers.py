@@ -12,6 +12,7 @@ import netrc
 import shutil
 import tempfile
 import subprocess
+from distutils.version import LooseVersion
 
 import requests
 from github import Github
@@ -20,6 +21,13 @@ try:
     HELPERS_TAG = sys.argv[1]
 except IndexError:
     raise IndexError("Please specify the helpers version as argument")
+
+
+if LooseVersion(HELPERS_TAG) < LooseVersion('3.0'):
+    from helpers_2 import repositories
+else:
+    from helpers_3 import repositories
+
 
 BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
 
@@ -42,6 +50,16 @@ A full list of changes can be found in the
 *This is intended to be helpful, but if you would prefer to manage these
 updates yourself, or if you notice any issues with this automated update,
 please let {1} know!*
+
+
+Along with with the astropy core release v3.0, we have also started to
+release astropy-helpers v3.0.x versions. Similarly to the core package,
+these require Python 3.5+. We will open automated update PRs with
+astropy-helpers v3.0.x only for packages that specifically opt in for it
+when they start supporting Python 3.5+ only.
+Please let {1} know or add your package to the list in
+https://github.com/astropy/astropy-procedures/blob/master/update-affiliated/helpers_3.py
+
 """).strip()
 
 
@@ -129,46 +147,6 @@ def open_pull_request(fork, repo):
 
 
 START_DIR = os.path.abspath('.')
-
-registry = requests.get("http://astropy.org/affiliated/registry.json").json()
-
-repositories = []
-for package in registry['packages']:
-    if 'github' not in package['repo_url']:
-        continue
-    owner, repository = package['repo_url'].split('/')[-2:]
-    if '.git' in repository:
-        repository = repository.replace('.git', '')
-    repositories.append((owner, repository))
-
-# Add a few repositories manually on request
-repositories.extend([('chandra-marx', 'marxs'),
-                     ('hamogu', 'astrospec'),
-                     ('hamogu', 'arcus'),
-                     ('hamogu', 'marxs-lynx'),
-                     ('hamogu', 'psfsubtraction'),
-                     ('astropy', 'regions'),
-                     ('astropy', 'astropy-healpix'),
-                     ('astropy', 'saba'),
-                     ('astropy', 'package-template'),
-                     ('sunpy', 'sunpy'),
-                     ('chianti-atomic', 'ChiantiPy'),
-                     ('pyspeckit', 'pyspeckit'),
-                     ('spacetelescope', 'asdf'),
-                     ('spacetelescope', 'astroimtools'),
-                     ('spacetelescope', 'synphot_refactor'),
-                     ('spacetelescope', 'stsynphot_refactor'),
-                     ('spacetelescope', 'stginga'),
-                     ('stsci-jwst', 'wss_tools'),
-                     ('StingraySoftware', 'HENDRICS'),
-                     ('StingraySoftware', 'stingray'),
-                     ('hipspy', 'hips'),
-                     ('desihub', 'specsim'),
-                     ('dkirkby', 'speclite'),
-                     ('matteobachetti', 'srt-single-dish-tools')])
-
-# Remove duplicates
-repositories = sorted(set(repositories))
 
 for owner, repository in repositories:
     repo = gh.get_repo("{0}/{1}".format(owner, repository))
