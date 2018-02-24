@@ -12,6 +12,7 @@ import netrc
 import shutil
 import tempfile
 import subprocess
+from distutils.version import LooseVersion
 
 import requests
 from github import Github
@@ -22,7 +23,7 @@ except IndexError:
     raise IndexError("Please specify the helpers version as argument")
 
 
-if HELPERS_TAG.startswith():
+if LooseVersion(HELPERS_TAG) < LooseVersion('3.0'):
     from helpers_2 import repositories
 else:
     from helpers_3 import repositories
@@ -51,11 +52,13 @@ updates yourself, or if you notice any issues with this automated update,
 please let {1} know!*
 
 
-Along with with the astropy core release v3.0, we started to release the
-astropy-helpers v3.0.x versions, too. Similarly to the core package, these
-require Python 3.5+. We will open automated update PRs only for packages
-that specifically opt in for it when they start supporting Python 3.5+ only.
-Please let {1} know.
+Along with with the astropy core release v3.0, we have also started to
+release astropy-helpers v3.0.x versions. Similarly to the core package,
+these require Python 3.5+. We will open automated update PRs with
+astropy-helpers v3.0.x only for packages that specifically opt in for it
+when they start supporting Python 3.5+ only.
+Please let {1} know or add your package to the list in
+https://github.com/astropy/astropy-procedures/blob/master/update-affiliated/helpers_3.py
 
 """).strip()
 
