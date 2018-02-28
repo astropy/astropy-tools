@@ -4,5 +4,5 @@
 # helpers rather than the LTS branch.
 
 repositories = sorted(set([
-
+    ('hipspy', 'hips'),
 ]))

@@ -35,7 +35,6 @@ repositories = sorted(set([
     ('pyspeckit', 'pyspeckit'),
     ('linetools', 'linetools'),
     ('poliastro', 'poliastro'),
-    ('hipspy', 'hips'),
     ('astropy', 'regions'),
     ('chandra-marx', 'marxs'),
     ('hamogu', 'astrospec'),
