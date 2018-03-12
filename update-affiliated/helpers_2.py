@@ -15,7 +15,6 @@ repositories = sorted(set([
     ('astrofrog', 'reproject'),
     ('pyvirtobs', 'pyvo'),
     ('gammapy', 'gammapy'),
-    ('astropy', 'ccdproc'),
     ('sncosmo', 'sncosmo'),
     ('glue-viz', 'glue'),
     ('astropy', 'pyregion'),

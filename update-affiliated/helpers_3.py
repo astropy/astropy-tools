@@ -4,5 +4,6 @@
 # helpers rather than the LTS branch.
 
 repositories = sorted(set([
+    ('astropy', 'ccdproc'),
     ('hipspy', 'hips'),
 ]))
