@@ -78,7 +78,8 @@ BRANCH_CLOSED = {
 #       when we add new branches, we'll need to add these branches to all
 #       existing manual merges.
 MANUAL_MERGES_DICT = {
-    'astropy/astropy': {'6605': ('v2.0.x',),
+    'astropy/astropy': {'7274': ('v2.0.x',),
+                        '6605': ('v2.0.x',),
                         '6555': ('v2.0.x',),
                         '6423': ('v2.0.x',),
                         '4792': ('v1.2.x',),
