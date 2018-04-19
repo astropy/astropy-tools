@@ -262,7 +262,8 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 for version in sorted(backports.keys()):
     if HTML_OUTPUT:
         print('<h1>Backports to {}</h1>'.format(version))
-        print('These are in merge order:')
+        print('{} merges in total. These are in merge order:'.format(
+            len(backports[version])))
         print('<pre>')
         for pr in backports[version]:
             prorurl = '#{}'.format('pr')
