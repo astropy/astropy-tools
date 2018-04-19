@@ -16,6 +16,7 @@ from distutils.version import LooseVersion
 
 import requests
 from github import Github
+from common import get_credentials
 
 try:
     HELPERS_TAG = sys.argv[1]
@@ -23,7 +24,7 @@ except IndexError:
     raise IndexError("Please specify the helpers version as argument")
 
 
-if LooseVersion(HELPERS_TAG) < LooseVersion('3.0'):
+if LooseVersion(HELPERS_TAG) < LooseVersion('v3.0'):
     from helpers_2 import repositories
 else:
     from helpers_3 import repositories
@@ -32,8 +33,8 @@ else:
 BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
 
 GITHUB_API_HOST = 'api.github.com'
-my_netrc = netrc.netrc()
-username, _, password = my_netrc.authenticators(GITHUB_API_HOST)[:3]
+
+username, password = get_credentials()
 gh = Github(username, password)
 user = gh.get_user()
 
