@@ -68,5 +68,6 @@ repositories = sorted(set([
     ('PAHFIT', 'pypahfit'),
     ('karllark', 'dust_extinction'),
     ('karllark', 'dust_attenuation'),
-    ('karllark', 'measure_extinction')
+    ('karllark', 'measure_extinction'),
+    ('matiscke', 'lcps')
 ]))
