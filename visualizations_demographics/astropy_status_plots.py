@@ -27,7 +27,7 @@ def generate_commit_stats_file(fn='gitlogstats', overwrite=False, dirtorunin=Non
         output = subprocess.check_output(cmd, cwd=dirtorunin)
         with open(fn, 'wb') as f:
             f.write(output)
-        return output
+        return output.decode()
 
 
 def parse_git_log(fn='gitlogstats', recentfirst=False, cumlines=False):
