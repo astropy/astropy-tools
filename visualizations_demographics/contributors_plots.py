@@ -186,6 +186,11 @@ def get_package_data():
         package_data = json.loads(url.read().decode())
         package_data = package_data['packages']
 
+        # Add in astropy core package, which isn't in the JSON file
+        package_data.append({
+            'name':'astropy',
+            'repo_url': 'https://github.com/astropy/astropy'})
+
         return package_data
 
 
