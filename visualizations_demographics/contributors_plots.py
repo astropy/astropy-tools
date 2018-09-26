@@ -30,6 +30,7 @@ import datetime
 import json
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
+import os
 import requests
 import urllib.request
 import yaml
@@ -94,6 +95,13 @@ def create_package_plot(package_name, contribution_data):
     plt.savefig(f'plots/{package_name}.png')
     plt.close()
 
+
+def create_plots_dir():
+    """Creates a plots/ subdirectory to save plots in, if it doesn't
+    already exist."""
+
+    if not os.path.exists('plots/'):
+        os.makedirs('plots/')
 
 def get_contributor_data(repo_url):
     """Use the GitHub RESTful API to gather contribution data for the
@@ -169,6 +177,9 @@ def get_package_data():
 
 
 if __name__ == '__main__':
+
+    # Create plots/ directory if necessary
+    create_plots_dir()
 
     # Initialize dictionary to hold all of the needed results
     package_contributions = {}
