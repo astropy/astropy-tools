@@ -7,7 +7,8 @@ time.
 Plots are made for individual packages as well as an aggregate of all
 astropy-affiliated packages.
 
-Plots are saved to a `plots/` directory alongside this module.
+Plots are saved to a `contribution-plots/` directory alongside this
+module.
 
 Authors
 -------
@@ -71,7 +72,7 @@ def create_aggregate_plot(package_contributions):
     ax.plot(all_contribution_dates, num_contributors)
     ax.set_title(r'All $\mathtt{astropy}$ Affiliated Packages')
     ax.set_ylabel('# of contributors')
-    plt.savefig(f'plots/all.png')
+    plt.savefig(f'contribution-plots/all.png')
     plt.close()
 
 
@@ -104,16 +105,16 @@ def create_package_plot(package_name, contribution_data):
     years = mdates.YearLocator()
     ax.xaxis.set_major_locator(years)
 
-    plt.savefig(f'plots/{package_name}.png')
+    plt.savefig(f'contribution-plots/{package_name}.png')
     plt.close()
 
 
 def create_plots_dir():
-    """Creates a plots/ subdirectory to save plots in, if it doesn't
-    already exist."""
+    """Creates a contribution-plots/ subdirectory to save plots in, if
+    it doesn't already exist."""
 
-    if not os.path.exists('plots/'):
-        os.makedirs('plots/')
+    if not os.path.exists('contribution-plots/'):
+        os.makedirs('contribution-plots/')
 
 def get_contributor_data(repo_url):
     """Use the GitHub RESTful API to gather contribution data for the
@@ -190,7 +191,7 @@ def get_package_data():
 
 if __name__ == '__main__':
 
-    # Create plots/ directory if necessary
+    # Create contribution-plots/ directory if necessary
     create_plots_dir()
 
     # Initialize dictionary to hold all of the needed results
