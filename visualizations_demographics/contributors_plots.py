@@ -47,17 +47,29 @@ def create_aggregate_plot(package_contributions):
         a list of dates in which a new contributor happened.
     """
 
-    new_contributors = []
+    all_contribution_usernames = []
+    all_contribution_dates = []
+
     for package in package_contributions:
-        new_contributors.extend(package_contributions[package].values())
+        contributor_data = package_contributions[package]
 
-    new_contributors = sorted(new_contributors)
-    num_contributors = list(range(len(new_contributors)))
+        contribution_dates = list(contributor_data.values())
+        contribution_usernames = list(contributor_data.keys())
 
+        for date, username in zip(contribution_dates, contribution_usernames):
+            if username not in all_contribution_usernames:
+                all_contribution_dates.append(date)
+                all_contribution_usernames.append(username)
+
+    # Sort by date for easier plotting
+    all_contribution_dates = sorted(all_contribution_dates)
+    num_contributors = list(range(len(all_contribution_usernames)))
+
+    # Make the plot
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.plot(new_contributors, num_contributors)
-    ax.set_title('All astropy Affiliated Packages')
+    ax.plot(all_contribution_dates, num_contributors)
+    ax.set_title(r'All $\mathtt{astropy}$ Affiliated Packages')
     ax.set_ylabel('# of contributors')
     plt.savefig(f'plots/all.png')
     plt.close()
