@@ -10,5 +10,5 @@ elif len(sys.argv) > 2:
 else:
     repository = 'astropy/astropy'
 
-with urllib.request.urlopen(f"https://api.github.com/repos/{repository}/issues") as response: 
+with urllib.request.urlopen(f"https://api.github.com/repos/{repository}/issues?filter=all?state=all?sort=created?direction=desc") as response: 
     print(f"Next PR number: {json.loads(response.read())[0]['number'] + 1}")
