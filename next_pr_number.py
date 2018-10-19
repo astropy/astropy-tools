@@ -1,5 +1,6 @@
 import sys
-from github import Github
+import json
+import urllib.request
 
 if len(sys.argv) == 2:
     repository = sys.argv[1]
@@ -9,7 +10,5 @@ elif len(sys.argv) > 2:
 else:
     repository = 'astropy/astropy'
 
-gh = Github()
-repo = gh.get_repo(repository)
-pl = repo.get_issues(sort='created', state='all')
-print("Next PR number: {0}".format(pl.get_page(0)[0].number + 1))
+with urllib.request.urlopen(f"https://api.github.com/repos/{repository}/issues") as response: 
+    print(f"Next PR number: {json.loads(response.read())[0]['number'] + 1}")
