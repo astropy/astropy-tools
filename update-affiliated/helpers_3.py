@@ -6,6 +6,7 @@
 repositories = sorted(set([
     ('astropy', 'ccdproc'),
     ('hipspy', 'hips'),
+    ('sunpy', 'sunpy'),
     ('spacetelescope', 'gwcs'),
     ('spacetelescope', 'spherical_geometry'),
 ]))

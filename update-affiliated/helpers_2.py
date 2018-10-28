@@ -44,7 +44,6 @@ repositories = sorted(set([
     ('astropy', 'astropy-healpix'),
     ('astropy', 'saba'),
     ('astropy', 'package-template'),
-    ('sunpy', 'sunpy'),
     ('chianti-atomic', 'ChiantiPy'),
     ('spacetelescope', 'asdf'),
     ('spacetelescope', 'astroimtools'),
