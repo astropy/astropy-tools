@@ -4,5 +4,19 @@
 # helpers rather than the LTS branch.
 
 repositories = sorted(set([
-
+    ('adrn', 'gala'),
+    ('astropy', 'ccdproc'),
+    ('astropy', 'photutils'),
+    ('astropy', 'specutils'),
+    ('hipspy', 'hips'),
+    ('poliastro', 'poliastro'),
+    ('sunpy', 'sunpy'),
+    ('spacetelescope', 'asdf'),
+    ('spacetelescope', 'cubeviz'),
+    ('spacetelescope', 'gwcs'),
+    ('spacetelescope', 'mosviz'),
+    ('spacetelescope', 'specviz'),
+    ('spacetelescope', 'spherical_geometry'),
+    ('spacetelescope', 'stginga'),
+    ('spacetelescope', 'wss_tools'),
 ]))
