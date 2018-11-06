@@ -68,17 +68,21 @@ BRANCH_CLOSED = {
     'v3.1.x': None
 }
 
-# We now list some exceptions, starting with manual merges. This gives for
-# the specified pull requests the list of branches in which the pull request
-# was merged (but which won't show up in the JSON file giving branches for
-# each pull request). These pull requests were merged manually without
-# preserving a merge commit that includes the pull request number.
+# We now list some exceptions, starting with manual merges/backports. This
+# gives for the specified pull requests the list of branches in which the
+# pull request was merged or was backported manually (but which won't show
+# up in the JSON file giving branches for each pull request). These pull
+# requests were merged manually without preserving a merge commit that
+# includes the original pull request number.
 
 # TODO: find a more future-proof way of including manual merges. At the moment,
 #       when we add new branches, we'll need to add these branches to all
 #       existing manual merges.
 MANUAL_MERGES_DICT = {
-    'astropy/astropy': {'6605': ('v2.0.x',),
+    'astropy/astropy': {'7575': ('v2.0.x',),
+                        '7336': ('v2.0.x',),
+                        '7274': ('v2.0.x',),
+                        '6605': ('v2.0.x',),
                         '6555': ('v2.0.x',),
                         '6423': ('v2.0.x',),
                         '4792': ('v1.2.x',),
@@ -260,7 +264,8 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 for version in sorted(backports.keys()):
     if HTML_OUTPUT:
         print('<h1>Backports to {}</h1>'.format(version))
-        print('These are in merge order:')
+        print('{} merges in total. These are in merge order:'.format(
+            len(backports[version])))
         print('<pre>')
         for pr in backports[version]:
             prorurl = '#{}'.format('pr')
