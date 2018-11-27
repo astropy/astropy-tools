@@ -1,4 +1,4 @@
-### About
+### Auto-updates for packages using astropy-helpers
 
 The scripts in this folder are used to update packages making use of
 astropy-helpers by automatically opening pull requests to those packages.
