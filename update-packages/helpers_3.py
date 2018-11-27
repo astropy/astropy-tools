@@ -19,4 +19,5 @@ repositories = sorted(set([
     ('spacetelescope', 'spherical_geometry'),
     ('spacetelescope', 'stginga'),
     ('spacetelescope', 'wss_tools'),
+    ('dkirkby', 'skysim'),
 ]))
