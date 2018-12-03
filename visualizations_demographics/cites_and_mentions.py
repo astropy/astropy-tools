@@ -22,6 +22,23 @@ def get_numbers(language):
 
     return years, np.array(values, dtype=float)
 
+def get_citation_counts_for_paper(bibcode):
+
+    query = ads.SearchQuery(q='citations(bibcode:{0})'.format(bibcode),
+                            database='astronomy', property='refereed',
+                            rows=2000, max_pages=2000)
+
+    query.execute()
+
+    paper_years = [int(art.year) for art in query.articles]
+
+    counts = []
+
+    for yr in sorted(set(paper_years)):
+        counts.append(paper_years.count(yr))
+
+    return sorted(set(paper_years)), counts
+
 def get_total():
     print("Getting total #'s")
     years = np.arange(1970, thisyear+1)
@@ -44,7 +61,7 @@ if __name__ == "__main__":
         values = {}
 
 
-    for lang in ('Python', 'Astropy', 'IDL', 'Fortran', 'Matlab', 'CASA', 'AIPS', 'sunpy', 'astropy affiliated', 'astroquery'):
+    for lang in ('Python', 'Astropy', 'IDL', 'Fortran', 'Matlab', 'CASA', 'AIPS', 'sunpy', 'astropy affiliated', 'astroquery', 'IRAF'):
         if lang not in years:
             years[lang], values[lang] = get_numbers(lang)
         # filter out zero-years
@@ -53,6 +70,26 @@ if __name__ == "__main__":
 
     if 'total' not in years:
         years['total'], values['total'] = get_total()
+
+
+    if 'astropy2013' not in years:
+        # astropy 2013 paper
+        astropy2013ppr = get_citation_counts_for_paper('2013A&A...558A..33A')
+        years['astropy2013'] = np.array(astropy2013ppr[0])
+        values['astropy2013'] = np.array(astropy2013ppr[1])
+
+    if 'astropy2018' not in years:
+        # astropy 2018 paper
+        astropy2018ppr = get_citation_counts_for_paper('2018AJ....156..123A')
+        years['astropy2018'] = np.array(astropy2018ppr[0])
+        values['astropy2018'] = np.array(astropy2018ppr[1])
+
+
+    if 'yt' not in years:
+        # yt 2011 paper
+        ytppr = get_citation_counts_for_paper('2011ApJS..192....9T')
+        years['yt'] = np.array(ytppr[0])
+        values['yt'] = np.array(ytppr[1])
 
 
     plt.rc('font', family='Source Sans Pro')
@@ -130,8 +167,14 @@ if __name__ == "__main__":
     ax.plot(years['Astropy'], values['Astropy'], '.-', label='Astropy')
     ax.plot(years['CASA'], values['CASA'], '.-', label='CASA')
     ax.plot(years['AIPS'], values['AIPS'], '.-', label='AIPS')
-    ax.plot(years['astropy affiliated'], values['astropy affiliated'], '.-', label='astropy affiliated', alpha=0.5)
-    ax.plot(years['astroquery'], values['astroquery'], '.-', label='astroquery', alpha=0.5)
+    #ax.plot(years['astropy affiliated'], values['astropy affiliated'], '.-', label='astropy affiliated', alpha=0.5)
+    #ax.plot(years['astroquery'], values['astroquery'], '.-', label='astroquery', alpha=0.5)
+    ax.plot(years['IRAF'], values['IRAF'], '.-', label='IRAF', alpha=0.5)
+    ax.plot(years['astropy2013'], values['astropy2013'], '.-', label='astropy2013', alpha=0.5)
+    ax.plot(years['astropy2018'], values['astropy2018'], '.-', label='astropy2018', alpha=0.5)
+    ax.plot(years['yt'], values['yt'], '.-', label='yt', alpha=0.5)
+    #ax.plot(years['sunpy'], values['sunpy'], '.-', label='sunpy', alpha=0.5)
+    #ax.plot(years['yt'], values['yt'], '.-', label='yt', alpha=0.5)
 
     ax.legend(fontsize=8, loc=2)
     # can't show this year b/c it isn't normalized
@@ -152,6 +195,9 @@ if __name__ == "__main__":
     fracyrs, astropy_fraction = get_ratio('Astropy', 'Python', return_years=True)
     ax.plot(fracyrs[fracyrs>2000], astropy_fraction[fracyrs>2000], '.-',
             label='Astropy/Python')
+    fracyrs2, astropycite_fraction = get_ratio('astropy2013', 'Astropy', return_years=True)
+    ax.plot(fracyrs2[fracyrs2>2000], astropycite_fraction[fracyrs2>2000], '.-',
+            label='Astropy 2013/Astropy')
 
     #ax.legend(fontsize=8, loc=2)
     # can't show this year b/c it isn't normalized
