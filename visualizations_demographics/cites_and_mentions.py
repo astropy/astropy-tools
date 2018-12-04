@@ -154,6 +154,10 @@ if __name__ == "__main__":
     ax.set_xlabel("Year")
     plt.savefig('hockey_stick_graph_normalized.png', dpi=150)
 
+    ax.plot(years['IRAF'], get_ratio('IRAF', 'total'), '.-', label='IRAF')
+    ax.plot(years['CASA'], get_ratio('CASA', 'total'), '.-', label='CASA')
+    ax.plot(years['AIPS'], get_ratio('AIPS', 'total'), '.-', label='AIPS')
+    plt.savefig('hockey_stick_graph_normalized_all.png', dpi=150)
 
     fig = plt.figure(num=3, figsize=(10,6))
     fig.clf()
