@@ -61,7 +61,11 @@ if __name__ == "__main__":
         values = {}
 
 
-    for lang in ('Python', 'Astropy', 'IDL', 'Fortran', 'Matlab', 'CASA', 'AIPS', 'sunpy', 'astropy affiliated', 'astroquery', 'IRAF'):
+    for lang in ('Python', 'Astropy', 'IDL', 'Fortran', 'Matlab', 'CASA',
+                 'AIPS', 'sunpy', 'astropy affiliated', 'astroquery', 'IRAF',
+                 'gildas', 'virtual observatory', 'erdas', 'khoros', 'pyraf',
+                 'starlink', 'gipsy', 'karma',
+                ):
         if lang not in years:
             years[lang], values[lang] = get_numbers(lang)
         # filter out zero-years
@@ -71,6 +75,13 @@ if __name__ == "__main__":
     if 'total' not in years:
         years['total'], values['total'] = get_total()
 
+
+    if 'iraf_plus_pyraf' not in locals():
+        iraf_plus_pyraf = 'Done'
+        for ii,yr in enumerate(years['IRAF']):
+            inds = years['pyraf'] == yr
+            if any(inds):
+                values['IRAF'][ii] += values['pyraf'][inds]
 
     if 'astropy2013' not in years:
         # astropy 2013 paper
@@ -154,9 +165,13 @@ if __name__ == "__main__":
     ax.set_xlabel("Year")
     plt.savefig('hockey_stick_graph_normalized.png', dpi=150)
 
-    ax.plot(years['IRAF'], get_ratio('IRAF', 'total'), '.-', label='IRAF')
+    ax.plot(years['IRAF'], get_ratio('IRAF', 'total'), '.-', label='IRAF+pyraf')
+    #ax.plot(years['pyraf'], get_ratio('pyraf', 'total'), '.-', label='pyraf')
     ax.plot(years['CASA'], get_ratio('CASA', 'total'), '.-', label='CASA')
     ax.plot(years['AIPS'], get_ratio('AIPS', 'total'), '.-', label='AIPS')
+    ax.plot(years['gildas'], get_ratio('gildas', 'total'), '.-', label='gildas')
+    ax.plot(years['virtual observatory'], get_ratio('virtual observatory', 'total'), '.-', label='virtual observatory')
+    ax.legend(fontsize=8, loc=2)
     plt.savefig('hockey_stick_graph_normalized_all.png', dpi=150)
 
     fig = plt.figure(num=3, figsize=(10,6))
@@ -173,12 +188,17 @@ if __name__ == "__main__":
     ax.plot(years['AIPS'], values['AIPS'], '.-', label='AIPS')
     #ax.plot(years['astropy affiliated'], values['astropy affiliated'], '.-', label='astropy affiliated', alpha=0.5)
     #ax.plot(years['astroquery'], values['astroquery'], '.-', label='astroquery', alpha=0.5)
-    ax.plot(years['IRAF'], values['IRAF'], '.-', label='IRAF', alpha=0.5)
-    ax.plot(years['astropy2013'], values['astropy2013'], '.-', label='astropy2013', alpha=0.5)
-    ax.plot(years['astropy2018'], values['astropy2018'], '.-', label='astropy2018', alpha=0.5)
-    ax.plot(years['yt'], values['yt'], '.-', label='yt', alpha=0.5)
+    ax.plot(years['IRAF'], values['IRAF'], '.-', label='IRAF+pyraf', alpha=0.5)
+    #ax.plot(years['pyraf'], values['pyraf'], '.-', label='pyraf', alpha=0.5)
+    #ax.plot(years['astropy2013'], values['astropy2013'], '.-', label='astropy2013', alpha=0.5)
+    #ax.plot(years['astropy2018'], values['astropy2018'], '.-', label='astropy2018', alpha=0.5)
+    ax.plot(years['yt'], values['yt'], '.--', label='yt', alpha=0.5)
+    ax.plot(years['gildas'], values['gildas'], '.--', label='gildas', alpha=0.5)
+    ax.plot(years['virtual observatory'], values['virtual observatory'], '.--', label='virtual observatory')
+    #ax.plot(years['karma'], values['karma'], '.--', label='karma', alpha=0.5)
+    ax.plot(years['starlink'], values['starlink'], '.--', label='starlink', alpha=0.5)
+    #ax.plot(years['gipsy'], values['gipsy'], '.--', label='gipsy', alpha=0.5)
     #ax.plot(years['sunpy'], values['sunpy'], '.-', label='sunpy', alpha=0.5)
-    #ax.plot(years['yt'], values['yt'], '.-', label='yt', alpha=0.5)
 
     ax.legend(fontsize=8, loc=2)
     # can't show this year b/c it isn't normalized
@@ -189,6 +209,8 @@ if __name__ == "__main__":
     plt.savefig('hockey_stick_graph_withCASAandAIPS.png', dpi=150)
     ax.set_xlim(2000, thisyear)
     plt.savefig('hockey_stick_graph_withCASAandAIPS_since2000.png', dpi=150)
+    ax.set_xlim(2008, thisyear)
+    plt.savefig('hockey_stick_graph_withCASAandAIPS_since2008.png', dpi=150)
 
 
     fig = plt.figure(num=4, figsize=(10,6))
@@ -202,6 +224,7 @@ if __name__ == "__main__":
     fracyrs2, astropycite_fraction = get_ratio('astropy2013', 'Astropy', return_years=True)
     ax.plot(fracyrs2[fracyrs2>2000], astropycite_fraction[fracyrs2>2000], '.-',
             label='Astropy 2013/Astropy')
+    plt.legend(loc='best')
 
     #ax.legend(fontsize=8, loc=2)
     # can't show this year b/c it isn't normalized
@@ -210,7 +233,5 @@ if __name__ == "__main__":
     ax.xaxis.get_major_formatter().set_useOffset(False)
     ax.set_ylabel("Fraction of papers")
     ax.set_xlabel("Year")
-    ax.set_xlim(2000, thisyear)
-    plt.savefig('hockey_stick_graph_astropyfraction_since2000.png', dpi=150)
-
-
+    ax.set_xlim(2012, thisyear)
+    plt.savefig('hockey_stick_graph_astropyfraction_since2012.png', dpi=150)
