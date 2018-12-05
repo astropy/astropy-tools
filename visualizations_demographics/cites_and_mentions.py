@@ -64,7 +64,8 @@ if __name__ == "__main__":
     for lang in ('Python', 'Astropy', 'IDL', 'Fortran', 'Matlab', 'CASA',
                  'AIPS', 'sunpy', 'astropy affiliated', 'astroquery', 'IRAF',
                  'gildas', 'virtual observatory', 'erdas', 'khoros', 'pyraf',
-                 'starlink', 'gipsy', 'karma',
+                 'starlink', 'gipsy', 'karma', 'github', 'bitbucket', 'svn',
+                 'cvs'
                 ):
         if lang not in years:
             years[lang], values[lang] = get_numbers(lang)
@@ -235,3 +236,28 @@ if __name__ == "__main__":
     ax.set_xlabel("Year")
     ax.set_xlim(2012, thisyear)
     plt.savefig('hockey_stick_graph_astropyfraction_since2012.png', dpi=150)
+
+
+    fig = plt.figure(num=5, figsize=(10,6))
+    fig.clf()
+    ax = fig.add_subplot(1,1,1)
+
+    ax.set_title("", size=10)
+
+
+    ax.plot(years['Astropy'], values['Astropy'], '.-', label='Astropy')
+    ax.plot(years['github'], values['github'], '.-', label='github')
+    ax.plot(years['bitbucket'], values['bitbucket'], '.-', label='bitbucket')
+    ax.plot(years['cvs'], values['cvs'], '.-', label='cvs')
+    ax.plot(years['svn'], values['svn'], '.-', label='svn')
+    plt.legend(loc='best')
+
+    #ax.legend(fontsize=8, loc=2)
+    # can't show this year b/c it isn't normalized
+    ax.set_xlim(1970, thisyear)
+    #ax.set_ylim(0, astropy_fraction[np.isfinite(astropy_fraction)].max()+0.05)
+    ax.xaxis.get_major_formatter().set_useOffset(False)
+    ax.set_ylabel("Number of papers")
+    ax.set_xlabel("Year")
+    ax.set_xlim(2000, thisyear)
+    plt.savefig('hockey_stick_graph_vcs.png', dpi=150)
