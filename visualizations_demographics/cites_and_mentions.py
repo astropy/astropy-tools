@@ -22,6 +22,23 @@ def get_numbers(language):
 
     return years, np.array(values, dtype=float)
 
+def get_annual_citation_count(string):
+
+    years = np.arange(1970, thisyear+1)
+    values = []
+
+    for year in years:
+        print("Getting {0}".format(year))
+        query = ads.SearchQuery(q='citations({0})'.format(string),
+                                database='astronomy', property='refereed',
+                                year="{0}".format(year),
+                                rows=2000, max_pages=2000)
+
+        query.execute()
+        values.append(query.response.numFound)
+
+    return years, np.array(values)
+
 def get_citation_counts_for_paper(bibcode):
 
     query = ads.SearchQuery(q='citations(bibcode:{0})'.format(bibcode),
