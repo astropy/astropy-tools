@@ -5,6 +5,7 @@
 
 repositories = sorted(set([
     ('adrn', 'gala'),
+    ('aplpy', 'aplpy'),
     ('astropy', 'ccdproc'),
     ('astropy', 'photutils'),
     ('astropy', 'specutils'),

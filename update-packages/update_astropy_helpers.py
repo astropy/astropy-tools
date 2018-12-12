@@ -59,7 +59,7 @@ these require Python 3.5+. We will open automated update PRs with
 astropy-helpers v3.0.x only for packages that specifically opt in for it
 when they start supporting Python 3.5+ only.
 Please let {1} know or add your package to the list in
-https://github.com/astropy/astropy-procedures/blob/master/update-affiliated/helpers_3.py
+https://github.com/astropy/astropy-procedures/blob/master/update-packages/helpers_3.py
 
 """).strip()
 
