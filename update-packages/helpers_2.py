@@ -48,7 +48,7 @@ repositories = sorted(set([
     ('matteobachetti', 'srt-single-dish-tools'),
     ('mhvk', 'baseband'),
     ('BEAST-Fitting', 'beast'),
-    ('PAHFIT', 'pypahfit'),
+    ('PAHFIT', 'pahfit'),
     ('karllark', 'dust_extinction'),
     ('karllark', 'dust_attenuation'),
     ('karllark', 'measure_extinction'),
