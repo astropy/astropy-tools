@@ -11,7 +11,6 @@ repositories = sorted(set([
     ('astropy', 'specutils'),
     ('ejeschke', 'ginga'),
     ('hipspy', 'hips'),
-    ('poliastro', 'poliastro'),
     ('sunpy', 'sunpy'),
     ('spacetelescope', 'asdf'),
     ('spacetelescope', 'cubeviz'),
