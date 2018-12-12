@@ -52,5 +52,6 @@ repositories = sorted(set([
     ('karllark', 'dust_extinction'),
     ('karllark', 'dust_attenuation'),
     ('karllark', 'measure_extinction'),
-    ('matiscke', 'lcps')
+    ('matiscke', 'lcps'),
+    ('BEAST-Fitting', 'megabeast')
 ]))
