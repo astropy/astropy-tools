@@ -38,7 +38,6 @@ repositories = sorted(set([
     ('desihub', 'specsim'),
     ('dkirkby', 'speclite'),
     ('discos', 'srt-single-dish-tools'),
-    ('mhvk', 'baseband'),
     ('BEAST-Fitting', 'beast'),
     ('PAHFIT', 'pahfit'),
     ('karllark', 'dust_extinction'),
