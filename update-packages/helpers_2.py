@@ -6,7 +6,6 @@
 
 repositories = sorted(set([
     ('astropy', 'astroquery'),
-    ('ejeschke', 'ginga'),
     ('astroML', 'astroML'),
     ('weaverba137', 'pydl'),
     ('aplpy', 'aplpy'),
