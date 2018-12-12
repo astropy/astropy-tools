@@ -22,4 +22,5 @@ repositories = sorted(set([
     ('spacetelescope', 'wss_tools'),
     ('dkirkby', 'skysim'),
     ('plasmapy', 'plasmapy'),
+    ('karllark', 'DGFit')
 ]))
