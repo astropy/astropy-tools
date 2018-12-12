@@ -8,13 +8,11 @@
 import os
 import re
 import sys
-import netrc
 import shutil
 import tempfile
 import subprocess
 from distutils.version import LooseVersion
 
-import requests
 from github import Github
 from common import get_credentials
 
@@ -53,10 +51,9 @@ updates yourself, or if you notice any issues with this automated update,
 please let {1} know!*
 
 
-Along with with the astropy core release v3.0, we have also started to
-release astropy-helpers v3.0.x versions. Similarly to the core package,
-these require Python 3.5+. We will open automated update PRs with
-astropy-helpers v3.0.x only for packages that specifically opt in for it
+Similarly to the core package, the v3.0+ releases of astropy-helpers
+require Python 3.5+. We will open automated update PRs with
+astropy-helpers v3.1.x only for packages that specifically opt in for it
 when they start supporting Python 3.5+ only.
 Please let {1} know or add your package to the list in
 https://github.com/astropy/astropy-procedures/blob/master/update-packages/helpers_3.py
@@ -99,12 +96,14 @@ def open_pull_request(fork, repo):
         return
 
     # Update to the latest upstream master
+    print("Updating to the latest upstream master.")
     run_command('git remote add upstream {0}'.format(repo.clone_url))
     run_command('git fetch upstream master')
     run_command('git checkout upstream/master')
     run_command('git checkout -b {0}'.format(BRANCH))
 
     # Initialize submodule
+    print("Initializing submodule.")
     run_command('git submodule init')
     run_command('git submodule update')
 
@@ -150,7 +149,13 @@ def open_pull_request(fork, repo):
 START_DIR = os.path.abspath('.')
 
 for owner, repository in repositories:
+    print("\n########################")
+    print("Starting package:     {}/{}".format(owner, repository))
+    print("########################\n")
+
+
     repo = gh.get_repo("{0}/{1}".format(owner, repository))
+
     fork = ensure_fork_exists(repo)
     try:
         open_pull_request(fork, repo)
