@@ -11,7 +11,6 @@ repositories = sorted(set([
     ('astropy', 'specutils'),
     ('ejeschke', 'ginga'),
     ('hipspy', 'hips'),
-    ('poliastro', 'poliastro'),
     ('sunpy', 'sunpy'),
     ('spacetelescope', 'asdf'),
     ('spacetelescope', 'cubeviz'),
@@ -23,5 +22,6 @@ repositories = sorted(set([
     ('spacetelescope', 'wss_tools'),
     ('dkirkby', 'skysim'),
     ('plasmapy', 'plasmapy'),
-    ('karllark', 'DGFit')
+    ('karllark', 'DGFit'),
+    ('mhvk', 'baseband'),
 ]))
