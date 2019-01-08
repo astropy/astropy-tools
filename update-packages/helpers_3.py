@@ -24,4 +24,8 @@ repositories = sorted(set([
     ('plasmapy', 'plasmapy'),
     ('karllark', 'DGFit'),
     ('mhvk', 'baseband'),
+    ('hamogu', 'arcus'),
+    ('hamogu', 'marxs-lynx'),
+    ('hamogu', 'psfsubtraction'),
+    ('Chandra-MARX', 'marxs'),
 ]))
