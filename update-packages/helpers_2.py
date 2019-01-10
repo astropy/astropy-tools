@@ -26,7 +26,6 @@ repositories = sorted(set([
     ('hamogu', 'astrospec'),
     ('astropy', 'astropy-healpix'),
     ('astropy', 'saba'),
-    ('astropy', 'package-template'),
     ('spacetelescope', 'astroimtools'),
     ('spacetelescope', 'synphot_refactor'),
     ('spacetelescope', 'stsynphot_refactor'),
