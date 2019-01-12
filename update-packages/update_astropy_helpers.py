@@ -104,16 +104,31 @@ class HelpersUpdater(Updater):
             self.helpers_tag, report_user)
 
 
-def main(helpers_tag):
-    """Main driver for the helpers batch updater."""
+def main(helpers_tag, dry_run=False, verbose=False):
+    """Main driver for the helpers batch updater.
 
+    Parameters
+    ----------
+    helpers_tag : str
+        Tag of astropy-helpers to update to.
+
+    dry_run : bool
+        If `True`, the updater does not push the feature branch out nor
+        open the actual pull request but still runs all the other steps
+        (i.e., forking, branching, and committing the changes).
+
+    verbose : bool
+        Print command output to screen.
+        If `False`, it will only be printed on failure.
+
+    """
     if LooseVersion(helpers_tag) < LooseVersion('v3.0'):
         from helpers_2 import repositories
     else:
         from helpers_3 import repositories
 
     all_repos = [f'{owner}/{repository}' for owner, repository in repositories]
-    pr_helper = HelpersUpdater(GITHUB_TOKEN)
+    pr_helper = HelpersUpdater(GITHUB_TOKEN, dry_run=dry_run, verbose=verbose)
     pr_helper.helpers_tag = helpers_tag
     pr_helper.run(all_repos)
 
@@ -124,6 +139,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'helpers_tag', help='Please specify the helpers version as argument')
+    parser.add_argument(
+        '--dry', action='store_true', help='Dry run only')
+    parser.add_argument(
+        '--verbose', action='store_true', help='Verbose output')
     args = parser.parse_args()
 
-    main(args.helpers_tag)
+    main(args.helpers_tag, dry_run=args.dry, verbose=args.verbose)
