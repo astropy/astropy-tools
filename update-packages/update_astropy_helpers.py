@@ -1,40 +1,22 @@
-# IMPORTANT: The purpose of this script is to update the astropy-helpers
-# submodule in all affiliated packages (and a few other packages) that make use
-# of the astropy-helpers. This script is not intended to be run by affiliated
-# package maintainers, and should only be run with approval of both the
-# astropy-helpers and package-template lead maintainers, once an
-# astropy-helpers release has been made.
+"""
+IMPORTANT NOTICE
+================
+The purpose of this script is to update the astropy-helpers
+submodule in all affiliated packages (and a few other packages) that make use
+of the astropy-helpers. This script is not intended to be run by affiliated
+package maintainers, and should only be run with approval of both the
+astropy-helpers and package-template lead maintainers, once an
+astropy-helpers release has been made.
 
+"""
 import os
 import re
-import sys
-import shutil
-import tempfile
 import subprocess
 from distutils.version import LooseVersion
 
-from github import Github
-from common import get_credentials
+from batchpr import Updater
 
-try:
-    HELPERS_TAG = sys.argv[1]
-except IndexError:
-    raise IndexError("Please specify the helpers version as argument")
-
-
-if LooseVersion(HELPERS_TAG) < LooseVersion('v3.0'):
-    from helpers_2 import repositories
-else:
-    from helpers_3 import repositories
-
-
-BRANCH = 'update-helpers-{0}'.format(HELPERS_TAG)
-
-GITHUB_API_HOST = 'api.github.com'
-
-username, password = get_credentials()
-gh = Github(username, password)
-user = gh.get_user()
+GITHUB_TOKEN = 'fixme'
 
 HELPERS_UPDATE_MESSAGE_BODY = re.sub('(\S+)\n', r'\1 ', """
 This is an automated update of the astropy-helpers submodule to {0}. This
@@ -61,105 +43,87 @@ https://github.com/astropy/astropy-procedures/blob/master/update-packages/helper
 """).strip()
 
 
-def run_command(command):
-    print('-' * 72)
-    print("Running '{0}'".format(command))
-    ret = subprocess.call(command, shell=True)
-    if ret != 0:
-        raise Exception("Command '{0}' failed".format(command))
+class HelpersUpdater(Updater):
+    """Class to handle batch updates of astropy-helpers."""
+    helpers_tag = ''  # This is set by user running the script.
+
+    def process_repo(self):
+        """Update astropy-helpers."""
+        # Check that the repo uses astropy-helpers
+        if os.path.exists('astropy_helpers'):
+            status = True
+            cmd_rev_list = ['git', 'rev-list', 'HEAD']
+
+            os.chdir('astropy_helpers')
+            rev_prev = subprocess.check_output(cmd_rev_list).splitlines()
+            self.run_command('git fetch origin')
+
+            self.run_command(f'git checkout {self.helpers_tag}')
+            rev_new = subprocess.check_output(cmd_rev_list).splitlines()
+            if len(rev_new) <= len(rev_prev):
+                print(f"Repository {self.repo.name} already has "
+                      "an up-to-date astropy-helpers")
+                return False
+            os.chdir('..')
+            self.copy('astropy_helpers/ah_bootstrap.py', 'ah_bootstrap.py')
+
+            self.run_command('git add astropy_helpers')
+            self.run_command('git add ah_bootstrap.py')
+            if os.path.exists('ez_setup.py'):
+                self.run_command('git rm ez_setup.py')
+
+        else:
+            status = False
+            print(f"Repository {self.repo.name} does not use astropy-helpers")
+
+        return status
+
+    @property
+    def commit_message(self):
+        return f"Updated astropy-helpers to {self.helpers_tag}"
+
+    @property
+    def branch_name(self):
+        return f'update-helpers-{self.helpers_tag}'
+
+    @property
+    def pull_request_title(self):
+        return f"Update astropy-helpers to {self.helpers_tag}"
+
+    @property
+    def pull_request_body(self):
+        default_user = 'astrofrog'
+        username = self.user.login
+
+        if username != default_user:
+            report_user = f'@{username} or @{default_user}'
+        else:
+            report_user = f'@{default_user}'
+
+        return HELPERS_UPDATE_MESSAGE_BODY.format(
+            self.helpers_tag, report_user)
 
 
-def ensure_fork_exists(repo):
-    if repo.owner.login != user.login:
-        return user.create_fork(repo)
+def main(helpers_tag):
+    """Main driver for the helpers batch updater."""
+
+    if LooseVersion(helpers_tag) < LooseVersion('v3.0'):
+        from helpers_2 import repositories
     else:
-        return repo
+        from helpers_3 import repositories
+
+    all_repos = [f'{owner}/{repository}' for owner, repository in repositories]
+    pr_helper = HelpersUpdater(GITHUB_TOKEN)
+    pr_helper.helpers_tag = helpers_tag
+    pr_helper.run(all_repos)
 
 
-def open_pull_request(fork, repo):
+if __name__ == '__main__':
+    import argparse
 
-    # Set up temporary directory
-    tmpdir = tempfile.mkdtemp()
-    os.chdir(tmpdir)
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        'helpers_tag', help='Please specify the helpers version as argument')
+    args = parser.parse_args()
 
-    # Clone the repository
-    run_command('git clone {0}'.format(fork.ssh_url))
-    os.chdir(repo.name)
-
-    # Make sure the branch doesn't already exist
-    try:
-        run_command('git checkout origin/{0}'.format(BRANCH))
-    except:
-        pass
-    else:
-        print("Branch {0} already exists".format(BRANCH))
-        return
-
-    # Update to the latest upstream master
-    print("Updating to the latest upstream master.")
-    run_command('git remote add upstream {0}'.format(repo.clone_url))
-    run_command('git fetch upstream master')
-    run_command('git checkout upstream/master')
-    run_command('git checkout -b {0}'.format(BRANCH))
-
-    # Initialize submodule
-    print("Initializing submodule.")
-    run_command('git submodule init')
-    run_command('git submodule update')
-
-    # Check that the repo uses astropy-helpers
-    if not os.path.exists('astropy_helpers'):
-        print("Repository {0} does not use astropy-helpers".format(repo.name))
-        return
-
-    # Update the helpers
-    os.chdir('astropy_helpers')
-    rev_prev = subprocess.check_output('git rev-list HEAD', shell=True).splitlines()
-    run_command('git fetch origin')
-
-    run_command('git checkout {0}'.format(HELPERS_TAG))
-    rev_new = subprocess.check_output('git rev-list HEAD', shell=True).splitlines()
-    if len(rev_new) <= len(rev_prev):
-        print("Repository {0} already has an up-to-date astropy-helpers".format(repo.name))
-        return
-    os.chdir('..')
-    shutil.copy('astropy_helpers/ah_bootstrap.py', 'ah_bootstrap.py')
-
-    run_command('git add astropy_helpers')
-    run_command('git add ah_bootstrap.py')
-    if os.path.exists('ez_setup.py'):
-        run_command('git rm ez_setup.py')
-    run_command('git commit -m "Updated astropy-helpers to {0}"'.format(HELPERS_TAG))
-
-    run_command('git push origin {0}'.format(BRANCH))
-
-    print(tmpdir)
-
-    report_user = '@astrofrog'
-
-    if username != 'astrofrog':
-        report_user = '@{} or @astrofrog'.format(username)
-
-    repo.create_pull(title='Update astropy-helpers to {0}'.format(HELPERS_TAG),
-                     body=HELPERS_UPDATE_MESSAGE_BODY.format(HELPERS_TAG, report_user),
-                     base='master',
-                     head='{0}:{1}'.format(fork.owner.login, BRANCH))
-
-
-START_DIR = os.path.abspath('.')
-
-for owner, repository in repositories:
-    print("\n########################")
-    print("Starting package:     {}/{}".format(owner, repository))
-    print("########################\n")
-
-
-    repo = gh.get_repo("{0}/{1}".format(owner, repository))
-
-    fork = ensure_fork_exists(repo)
-    try:
-        open_pull_request(fork, repo)
-    except:
-        pass
-    finally:
-        os.chdir(START_DIR)
+    main(args.helpers_tag)
