@@ -111,6 +111,10 @@ EXPECTED_MISSING = {
     '4266': ('v1.1.x',),  # Forgot to backport to v1.1.x
 }
 
+REVERTED_FROM_BRANCH ={
+    '6277': ('v2.0.x',),  # PR has been reverted from this branch
+}
+
 # The following pull requests appear as merged on GitHub but were actually
 # marked as merged by another pull request getting merge and including a
 # superset of the original commits.
@@ -212,7 +216,10 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 
             for i in range(index):
                 if BRANCHES[i] in branches:
-                    status.append(('Pull request was included in branch {0}'.format(BRANCHES[i]), INVALID))
+                    if BRANCHES[i] in REVERTED_FROM_BRANCH.get(pr, []):
+                        status.append(('Pull request was in branc {0} but has been reverted later.'.format(BRANCHES[i]), VALID))
+                    else:
+                        status.append(('Pull request was included in branch {0}'.format(BRANCHES[i]), INVALID))
                 else:
                     pass  # all good
 
