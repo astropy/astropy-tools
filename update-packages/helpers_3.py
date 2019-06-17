@@ -30,4 +30,6 @@ repositories = sorted(set([
     ('Chandra-MARX', 'marxs'),
     ('gammapy', 'gammapy'),
     ('StingraySoftware', 'stingray'),
+    ('StingraySoftware', 'HENDRICS'),
+    ('discos', 'srt-single-dish-tools'),
 ]))
