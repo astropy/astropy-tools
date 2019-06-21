@@ -53,7 +53,7 @@ please let {1} know!*
 
 Similarly to the core package, the v3.0+ releases of astropy-helpers
 require Python 3.5+. We will open automated update PRs with
-astropy-helpers v3.1.x only for packages that specifically opt in for it
+astropy-helpers v3.2.x only for packages that specifically opt in for it
 when they start supporting Python 3.5+ only.
 Please let {1} know or add your package to the list in
 https://github.com/astropy/astropy-procedures/blob/master/update-packages/helpers_3.py

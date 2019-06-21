@@ -6,10 +6,6 @@
 
 repositories = sorted(set([
     ('astropy', 'astroquery'),
-    ('weaverba137', 'pydl'),
-    ('astropy', 'reproject'),
-    ('pyvirtobs', 'pyvo'),
-    ('sncosmo', 'sncosmo'),
     ('astropy', 'pyregion'),
     ('radio-astro-tools', 'spectral-cube'),
     ('astropy', 'astroplan'),
@@ -19,12 +15,7 @@ repositories = sorted(set([
     ('astropy', 'halotools'),
     ('pyspeckit', 'pyspeckit'),
     ('linetools', 'linetools'),
-    ('astropy', 'regions'),
     ('astropy', 'astropy-healpix'),
-    ('astropy', 'saba'),
-    ('spacetelescope', 'astroimtools'),
-    ('spacetelescope', 'synphot_refactor'),
-    ('spacetelescope', 'stsynphot_refactor'),
     ('spacetelescope', 'imexam'),
     ('desihub', 'specsim'),
     ('dkirkby', 'speclite'),
