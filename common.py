@@ -6,10 +6,12 @@ GITHUB_API_HOST = 'api.github.com'
 
 BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
                                      'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x',
-                                     'v2.0.x', 'v3.0.x', 'v3.1.x'],
+                                     'v2.0.x',
+                                     'v3.0.x', 'v3.1.x', 'v3.2.x'],
                  'astropy/astropy-helpers': ['v0.4.x', 'v1.0.x', 'v1.1.x',
                                              'v1.2.x', 'v1.3.x',
-                                             'v2.0.x', 'v3.0.x', 'v3.1.x'],
+                                             'v2.0.x',
+                                             'v3.0.x', 'v3.1.x', 'v3.2.x'],
                  'astropy/astroquery': []  # we don't have bugfix branches
                  }
 

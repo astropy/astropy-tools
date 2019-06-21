@@ -65,7 +65,8 @@ BRANCH_CLOSED = {
     'v1.3.x': parse_isoformat('2017-05-29T23:44:38'),
     'v2.0.x': None,
     'v3.0.x': parse_isoformat('2018-10-18T16:00:00'),
-    'v3.1.x': None
+    'v3.1.x': parse_isoformat('2019-04-15T16:00:00'),
+    'v3.2.x': None
 }
 
 # We now list some exceptions, starting with manual merges/backports. This
@@ -93,9 +94,13 @@ MANUAL_MERGES_DICT = {
                         '4254': ('v1.0.x',),
                         '4719': ('v1.2.x',),
                         '4201': ('v1.0.x', 'v1.1.x', 'v1.2.x')},
-    'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x', 'v3.0.x', 'v3.1.x'),
-                                '172': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x', 'v3.0.x', 'v3.1.x'),
-                                '206': ('v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x', 'v3.0.x', 'v3.1.x'),
+    'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
+                                        'v3.0.x', 'v3.1.x', 'v3.2.x'),
+                                '172': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
+                                        'v3.0.x', 'v3.1.x', 'v3.2.x'),
+                                '206': ('v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x',
+                                        'v2.0.x',
+                                        'v3.0.x', 'v3.1.x', 'v3.2.x'),
                                 '362': ('v2.0.x')}
 }
 
