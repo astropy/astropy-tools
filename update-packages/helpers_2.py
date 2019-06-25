@@ -20,7 +20,6 @@ repositories = sorted(set([
     ('pyspeckit', 'pyspeckit'),
     ('linetools', 'linetools'),
     ('astropy', 'regions'),
-    ('hamogu', 'astrospec'),
     ('astropy', 'astropy-healpix'),
     ('astropy', 'saba'),
     ('spacetelescope', 'astroimtools'),
