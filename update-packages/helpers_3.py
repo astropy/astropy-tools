@@ -9,6 +9,7 @@ repositories = sorted(set([
     ('astropy', 'ccdproc'),
     ('astropy', 'photutils'),
     ('astropy', 'specutils'),
+    ('astropy', 'saba'),
     ('ejeschke', 'ginga'),
     ('hipspy', 'hips'),
     ('sunpy', 'sunpy'),
