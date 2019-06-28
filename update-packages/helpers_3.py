@@ -19,7 +19,6 @@ repositories = sorted(set([
     ('sunpy', 'sunpy'),
     ('spacetelescope', 'gwcs'),
     ('spacetelescope', 'specviz'),
-    ('spacetelescope', 'spherical_geometry'),
     ('spacetelescope', 'stginga'),
     ('spacetelescope', 'wss_tools'),
     ('spacetelescope', 'astroimtools'),
