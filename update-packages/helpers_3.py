@@ -29,6 +29,7 @@ repositories = sorted(set([
     ('plasmapy', 'plasmapy'),
     ('karllark', 'DGFit'),
     ('mhvk', 'baseband'),
+    ('mhvk', 'scintillometry'),
     ('hamogu', 'arcus'),
     ('hamogu', 'marxs-lynx'),
     ('hamogu', 'psfsubtraction'),
