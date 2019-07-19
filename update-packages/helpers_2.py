@@ -19,11 +19,5 @@ repositories = sorted(set([
     ('spacetelescope', 'imexam'),
     ('desihub', 'specsim'),
     ('dkirkby', 'speclite'),
-    ('BEAST-Fitting', 'beast'),
-    ('PAHFIT', 'pahfit'),
-    ('karllark', 'dust_extinction'),
-    ('karllark', 'dust_attenuation'),
-    ('karllark', 'measure_extinction'),
-    ('matiscke', 'lcps'),
-    ('BEAST-Fitting', 'megabeast')
+    ('matiscke', 'lcps')
 ]))
