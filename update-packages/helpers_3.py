@@ -39,4 +39,10 @@ repositories = sorted(set([
     ('discos', 'srt-single-dish-tools'),
     ('NASA-Planetary-Science', 'sbpy'),
     ('weaverba137', 'pydl'),
+    ('BEAST-Fitting', 'beast'),
+    ('BEAST-Fitting', 'megabeast'),
+    ('PAHFIT', 'pahfit'),
+    ('karllark', 'dust_extinction'),
+    ('karllark', 'dust_attenuation'),
+    ('karllark', 'measure_extinction')
 ]))
