@@ -16,7 +16,6 @@ repositories = sorted(set([
     ('pyspeckit', 'pyspeckit'),
     ('linetools', 'linetools'),
     ('astropy', 'astropy-healpix'),
-    ('spacetelescope', 'imexam'),
     ('desihub', 'specsim'),
     ('dkirkby', 'speclite'),
     ('BEAST-Fitting', 'beast'),
