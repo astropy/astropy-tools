@@ -1,14 +1,11 @@
-import sys
+import argparse
 import json
 import urllib.request
 
-if len(sys.argv) == 2:
-    repository = sys.argv[1]
-elif len(sys.argv) > 2:
-    print("Usage: next_pr_number.py <repository>")
-    sys.exit(1)
-else:
-    repository = 'astropy/astropy'
+parser = argparse.ArgumentParser()
+parser.add_argument('repository', default='astropy/astropy', nargs='?', help='the repository to search for the next PR (default is "astropy/astropy")')
 
-with urllib.request.urlopen(f"https://api.github.com/repos/{repository}/issues?state=all&sort=created&direction=desc") as response:
+args = parser.parse_args()
+
+with urllib.request.urlopen(f"https://api.github.com/repos/{args.repository}/issues?state=all&sort=created&direction=desc") as response:
     print(f"Next PR number: {json.loads(response.read())[0]['number'] + 1}")
