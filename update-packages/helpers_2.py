@@ -10,7 +10,6 @@ repositories = sorted(set([
     ('radio-astro-tools', 'spectral-cube'),
     ('astropy', 'astroplan'),
     ('astropy', 'astroscrappy'),
-    ('zblz', 'naima'),
     ('RiceMunk', 'omnifit'),
     ('astropy', 'halotools'),
     ('pyspeckit', 'pyspeckit'),
