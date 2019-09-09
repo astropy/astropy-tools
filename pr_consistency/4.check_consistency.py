@@ -176,8 +176,11 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
     # Make sure that the milestone is consistent with the changelog section, and
     # that this is also consistent with the labels set on the pull request.
 
+    affect_dev = {'Affects-dev', 'affects-dev', 'affect-dev', 'Affect-dev'}
+    affect_dev_in_labels = len(affect_dev.intersection(set(labels))) > 0
+
     if pr in changelog_prs:
-        if 'Affects-dev' in labels:
+        if affect_dev_in_labels:
             pass  # don't print for now since there are too many
             # status.append(('Labelled as affects-dev but in changelog ({0})'.format(cl_version), INVALID))
         elif 'no-changelog-entry-needed' in labels:
@@ -190,7 +193,7 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
             else:
                 status.append(('Milestone is {0} but change log section is {1}'.format(milestone, cl_version), INVALID))
     else:
-        if 'Affects-dev' in labels:
+        if affect_dev_in_labels:
             status.append(('Labelled as affects-dev and not in changelog', VALID))
         elif 'no-changelog-entry-needed' in labels:
             status.append(('Labelled as no-changelog-entry-needed and not in changelog', VALID))
