@@ -26,7 +26,14 @@ NAME = os.path.basename(REPOSITORY)
 print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY))
 
-CHANGELOG = 'https://raw.githubusercontent.com/{}/master/{}'.format(REPOSITORY, CHANGELOG_NAME)
+if os.environ.get('LOCAL_CHANGELOG'):
+    CHANGELOG = os.environ['LOCAL_CHANGELOG']
+    with open(CHANGELOG) as f:
+        changelog_lines = f.readlines()
+else:
+    CHANGELOG = 'https://raw.githubusercontent.com/{}/master/{}'.format(REPOSITORY, CHANGELOG_NAME)
+    changelog_lines = requests.get(CHANGELOG).text.splitlines()
+
 TMPDIR = tempfile.mkdtemp()
 
 BLOCK_PATTERN = re.compile('[[(]#[0-9#, ]+[])]')
@@ -54,7 +61,7 @@ previous = None
 
 new_changelog_format = False
 
-for line in requests.get(CHANGELOG).text.splitlines():
+for line in changelog_lines:
     if '=======' in line:
         new_changelog_format = True
     if '=======' in line or (not new_changelog_format and '-------' in line):
