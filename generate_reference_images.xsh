@@ -99,6 +99,6 @@ for name, build in builds.items():
     docker run -v f"{base_path.resolve()}:/repo" -v f"{output_path.resolve()}:/images" -w /repo f"{build['image']}" @(build['command'])
     clean_repo()
 
-if args['sudo']:
+if args['--sudo']:
     uid = $(id -u).strip()
     $[sudo chown -R @(uid) @(output_path.resolve())]
