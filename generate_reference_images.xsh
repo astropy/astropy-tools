@@ -101,4 +101,4 @@ for name, build in builds.items():
 
 if args['sudo']:
     uid = $(id -u).strip()
-    sudo chown -r @(uid) @(output_path.resolve())
+    $[sudo chown -R @(uid) @(output_path.resolve())]
