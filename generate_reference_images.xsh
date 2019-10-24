@@ -2,21 +2,43 @@
 """
 A xonsh script to run generate all the reference images for astropy core.
 
-./generate_reference_images.xsh astropy_repo_dir images_output_dir [--new-dir]
+The idea of this script is you give it the astropy repo dir and the
+astropy-data dir where the figure tests live, and then you PR the changes to
+the astropy-data repo.
 
-if `--new-dir` is specifed a new timestamped dir will be created,
-otherwise it is assumed that `images_output_dir` is already a timestamp dir.
+Usage:
+    generate_reference_images.xsh <astropy_repo_dir> <base_images_output_dir> [--new-dir | --sub-dir=<subdir>] [--clean] [--sudo]
+
+Options:
+    - h --help          Show this screen.
+    --version           Show version.
+    --new-dir           Generate a new timestamp dir in <base_images_output_dir>.
+    --sub-dir=<subdir>  Use this subdir in <base_images_output_dir> rather than creating a new one.
+    --clean             Run `git clean -fxd` after every build to clean the env.
+    --sudo              Run the `git clean -fxd` with sudo, and also chown the output dir at the end.
 """
-
+from docopt import docopt
 import datetime
 from pathlib import Path
 
 import yaml
 
-base_path = Path($ARGS[1])
-output_path = Path($ARGS[2])
-create_new_dir = "--new-dir" in $ARGS
-now = datetime.datetime.now().isoformat()
+args = docopt(__doc__, version="0.2")
+
+base_path = Path(args['<astropy_repo_dir>'])
+output_path = Path(args['<base_images_output_dir>'])
+create_new_dir = args['--new-dir']
+sub_dir = args['--sub-dir']
+
+clean_comand = None
+if args['--clean']:
+    clean_command = "git clean -fxd"
+    if args['--sudo']:
+        clean_command = f"sudo {clean_command}"
+    clean_command = clean_command.split()
+
+if create_new_dir:
+    sub_dir = datetime.datetime.now().isoformat()
 
 with open(base_path / '.circleci' / 'config.yml') as f:
     config = yaml.load(f)
@@ -42,8 +64,8 @@ for name, build in config.items():
                 version = image.split(":")[0].split("mpl")[1]
                 version = f"{version[0]}.{version[1]}.x"
             command = command.split("-a")[0]
-            if create_new_dir:
-                command += f'-a "--mpl --mpl-generate-path=/images/{now}/{version}"'
+            if sub_dir:
+                command += f'-a "--mpl --mpl-generate-path=/images/{sub_dir}/{version}"'
             else:
                 command += f'-a "--mpl --mpl-generate-path=/images/{version}"'
 
@@ -56,10 +78,27 @@ for name, build in config.items():
                     'command': command}
 
 
+def clean_repo():
+    if clean_command:
+        cwd = Path.cwd()
+        cd f"{base_path}"
+        print("Cleaning repo...")
+        $[@(clean_command)]
+        cd f"{cwd}"
+
+
+# Ensure we start with a clean env
+clean_repo()
+
 for name, build in builds.items():
     print()
     print()
     print(f"Running {name} build...")
     docker pull f"{build['image']}"
     print(build['command'])
-    docker run -v f"{base_path.absolute()}:/repo" -v f"{output_path.absolute()}:/images" -w /repo f"{build['image']}" @(build['command'])
+    docker run -v f"{base_path.resolve()}:/repo" -v f"{output_path.resolve()}:/images" -w /repo f"{build['image']}" @(build['command'])
+    clean_repo()
+
+if args['sudo']:
+    uid = $(id -u).strip()
+    sudo chown -r @(uid) @(output_path.resolve())
