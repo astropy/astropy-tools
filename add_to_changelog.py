@@ -20,33 +20,33 @@ import argparse
 
 
 NEW_CHANGELOG_TEMPLATE = """{newvers} (unreleased)
-{newvers_head}-------------
+{newvers_head}=============
 
 New Features
-^^^^^^^^^^^^
+------------
 
 {package_list}
 
 API Changes
-^^^^^^^^^^^
+-----------
 
 {package_list}
 
 Bug Fixes
-^^^^^^^^^
+---------
 
 {package_list}
 
 Other Changes and Additions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+---------------------------
 
 - Nothing changed yet.
 
 """
 
 
-new_version_re = re.compile(r'--*$')
-package_re = re.compile(r'- ``(astropy\..*)``$')
+new_version_re = re.compile(r'==*$')
+package_re = re.compile(r'(astropy\..*)$')
 
 def find_all_package_sections(fn):
     pkg_list = []
@@ -90,11 +90,11 @@ def main(argv=None):
 
     pkg_list = find_all_package_sections(args.changelog)
 
-    pkg_list_str = '\n\n'.join(['- ``{}``'.format(pnm) for pnm in pkg_list])
+    pkg_list_str = '\n\n'.join(['{}\n{}'.format(pnm, '^'*len(pnm)) for pnm in pkg_list])
 
 
     new_changelog = NEW_CHANGELOG_TEMPLATE.format(newvers=args.version,
-                                                  newvers_head='-'*len(args.version),
+                                                  newvers_head='='*len(args.version),
                                                   package_list=pkg_list_str)
     if args.write:
         with open(args.changelog) as fr:
@@ -106,7 +106,7 @@ def main(argv=None):
                     if args.last_version + ' (' in l:
                         header_match = l + '\n'
                     elif header_match:
-                        if '-'*len(args.last_version) in l:
+                        if '='*len(args.last_version) in l:
                             fw.write('\n\n')
                             fw.write(new_changelog)
                             fw.write('\n\n\n')
