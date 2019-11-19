@@ -176,7 +176,13 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
     milestone = merged_prs[pr]['milestone']
     if milestone is not None and not milestone.startswith('v') and milestone != 'Future':
         milestone = 'v' + milestone
+
     cl_version = changelog_prs.get(pr, None)
+
+    if cl_version:
+        # Ignore RC status in changelog, those are temporary measures
+        cl_version = cl_version.split('rc')[0]
+
     branches = pr_branches.get(pr, [])
 
     status = []
