@@ -54,20 +54,23 @@ BRANCHES = get_branches(REPOSITORY)
 # understand later whether a pull request could have been backported to a given
 # branch.
 
-BRANCH_CLOSED = {
-    'v0.1.x': parse_isoformat('2012-06-19T02:09:53'),
-    'v0.2.x': parse_isoformat('2013-10-25T12:29:58'),
-    'v0.3.x': parse_isoformat('2014-05-13T12:06:04'),
-    'v0.4.x': parse_isoformat('2015-05-29T15:44:38'),
-    'v1.0.x': parse_isoformat('2017-05-29T23:44:38'),
-    'v1.1.x': parse_isoformat('2016-03-10T01:09:50'),
-    'v1.2.x': parse_isoformat('2016-12-23T05:32:04'),
-    'v1.3.x': parse_isoformat('2017-05-29T23:44:38'),
-    'v2.0.x': None,
-    'v3.0.x': parse_isoformat('2018-10-18T16:00:00'),
-    'v3.1.x': parse_isoformat('2019-04-15T16:00:00'),
-    'v3.2.x': None
-}
+BRANCH_CLOSED_DICT = {'astropy/astropy': {
+                          'v0.1.x': parse_isoformat('2012-06-19T02:09:53'),
+                          'v0.2.x': parse_isoformat('2013-10-25T12:29:58'),
+                          'v0.3.x': parse_isoformat('2014-05-13T12:06:04'),
+                          'v0.4.x': parse_isoformat('2015-05-29T15:44:38'),
+                          'v1.0.x': parse_isoformat('2017-05-29T23:44:38'),
+                          'v1.1.x': parse_isoformat('2016-03-10T01:09:50'),
+                          'v1.2.x': parse_isoformat('2016-12-23T05:32:04'),
+                          'v1.3.x': parse_isoformat('2017-05-29T23:44:38'),
+                          'v2.0.x': parse_isoformat('2019-11-10T16:00:00'),
+                          'v3.0.x': parse_isoformat('2018-10-18T16:00:00'),
+                          'v3.1.x': parse_isoformat('2019-04-15T16:00:00'),
+                          'v3.2.x': parse_isoformat('2019-11-10T16:00:00'),
+                          'v4.0.x': None},
+                      }
+
+BRANCH_CLOSED_DICT['astropy/astropy-helpers'] = BRANCH_CLOSED_DICT['astropy/astropy']
 
 # We now list some exceptions, starting with manual merges/backports. This
 # gives for the specified pull requests the list of branches in which the
@@ -105,10 +108,15 @@ MANUAL_MERGES_DICT = {
                                 '362': ('v2.0.x')}
 }
 
+
+BRANCH_CLOSED = {}
+MANUAL_MERGES = {}
+
 try:
+    BRANCH_CLOSED = BRANCH_CLOSED_DICT[REPOSITORY]
     MANUAL_MERGES = MANUAL_MERGES_DICT[REPOSITORY]
 except KeyError:
-    MANUAL_MERGES = {}
+    pass
 
 # The following gives pull requests we know are missing from certain branches
 # and which we will never be able to backport since those branches are closed.
