@@ -1,3 +1,7 @@
+# DEPRECATED
+
+This version of this documented is deprecated.  The canonical copy can be found [in the astropy project-wide policies repo](https://github.com/astropy/project/blob/master/affiliated/affiliated_package_review_guidelines.md).
+
 # Reviewing affiliated packages
 
 This document describes the set of review criteria for packages applying to

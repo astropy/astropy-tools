@@ -1,3 +1,8 @@
+# DEPRECATED
+
+This version of this documented is deprecated.  The canonical copy can be found [in the astropy project-wide policies repo](https://github.com/astropy/project/blob/master/affiliated/affiliated_package_review_process.md).
+
+
  # Procedure for the proposal, review, and acceptance of Astropy-affiliated packages
 
 This document describes the procedure for proposing, reviewing, and making a
