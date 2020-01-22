@@ -278,8 +278,18 @@ respond to the comments and/or address any of them.
 
 *In all cases:*
 
+
 If you have any follow-up questions or disagree with any of the comments above,
-leave a comment and we can discuss it here. At any point in future you can
-request a re-review of the package if you believe any of the scores should be
-updated - contact the coordination committee, and we’ll do a new review.
+leave a comment and we can discuss it here. Or if this has been merged but you
+want to suggest a change to the review status, you can open an PR in this repo
+updating your package's review status, along with an explanation of why you
+think it should be changed.
+
+At any point in future you or someone else can
+request a full re-review of the package if you believe substantial changes have been
+made and many of the scores should be updated - contact the coordination committee,
+and we’ll do a new review.
+
+
+
 ```
