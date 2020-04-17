@@ -24,6 +24,8 @@ repositories = sorted(set([
     ('spacetelescope', 'wss_tools'),
     ('spacetelescope', 'astroimtools'),
     ('dkirkby', 'skysim'),
+    ('dkirkby', 'speclite'),
+    ('desihub', 'specsim'),
     ('plasmapy', 'plasmapy'),
     ('karllark', 'DGFit'),
     ('mhvk', 'baseband'),
