@@ -67,7 +67,8 @@ BRANCH_CLOSED_DICT = {'astropy/astropy': {
                           'v3.0.x': parse_isoformat('2018-10-18T16:00:00'),
                           'v3.1.x': parse_isoformat('2019-04-15T16:00:00'),
                           'v3.2.x': parse_isoformat('2019-11-10T16:00:00'),
-                          'v4.0.x': None},
+                          'v4.0.x': None,
+                          'v4.1.x': None},
                       }
 
 BRANCH_CLOSED_DICT['astropy/astropy-helpers'] = BRANCH_CLOSED_DICT['astropy/astropy']
@@ -97,7 +98,7 @@ MANUAL_MERGES_DICT = {
                         '4254': ('v1.0.x',),
                         '4719': ('v1.2.x',),
                         '4201': ('v1.0.x', 'v1.1.x', 'v1.2.x'),
-                        '9183': ('v3.2.x', 'v4.0.x')},
+                        '9183': ('v3.2.x', 'v4.0.x', 'v4.1.x')},
     'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
                                         'v3.0.x', 'v3.1.x', 'v3.2.x', 'v4.0.x'),
                                 '172': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
