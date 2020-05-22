@@ -50,7 +50,7 @@ NAME = os.path.basename(REPOSITORY)
 print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY))
 
-json_filename = 'merged_pull_requests_{}_graphql.json'.format(NAME)
+json_filename = 'merged_pull_requests_{}.json'.format(NAME)
 
 TOKEN = input('Enter your GitHub personal token: ')
 
