@@ -1,5 +1,8 @@
 ### Auto-updates for packages using astropy-helpers
 
+**NOTE: The scripts here are for archival records only.
+No further update of astropy-helpers is planned.**
+
 The scripts in this folder are used to update packages making use of
 astropy-helpers by automatically opening pull requests to those packages.
 
