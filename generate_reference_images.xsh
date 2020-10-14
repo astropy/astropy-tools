@@ -65,9 +65,9 @@ for name, build in config.items():
                 version = f"{version[0]}.{version[1]}.x"
             command = command.split("-a")[0]
             if sub_dir:
-                command += f'-a "--mpl --mpl-generate-path=/images/{sub_dir}/{version}"'
+                command += f'-a --mpl-generate-path=/images/{sub_dir}/{version}'
             else:
-                command += f'-a "--mpl --mpl-generate-path=/images/{version}"'
+                command += f'-a --mpl-generate-path=/images/{version}'
 
         if command:
             commands.append(command)
