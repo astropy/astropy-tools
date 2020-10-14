@@ -125,20 +125,12 @@ def count_prs_since(dt, repo, auth=None, verbose=True, cacheto=None):
 
 
 def get_datetime_of_pypi_version(pkg, version):
-    from xml.dom import minidom
+    resp = requests.get(f"https://pypi.org/pypi/{pkg}/json")
+    j = resp.json()
 
-    url = 'http://pypi.python.org/pypi/{0}/{1}'.format(pkg, version)
+    datestr = j['releases'][version][0]['upload_time']
 
-    dom = minidom.parseString(requests.get(url).content)
-
-    table = dom.getElementsByTagName('table')[0]
-    t = table.getElementsByTagName('tr')[1].getElementsByTagName('td')[-2].firstChild
-    if t.nodeType != t.TEXT_NODE:
-        raise ValueError("pypi page for {0}/{1} ddoesn't seem to have a date".format(pkg, version))
-    else:
-        datestr = t.data
-
-    return datetime.datetime.strptime(datestr, "%Y-%m-%d")
+    return datetime.datetime.strptime(datestr, "%Y-%m-%dT%H:%M:%S")
 
 
 def main(argv=None):
