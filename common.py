@@ -30,8 +30,8 @@ def get_credentials(username=None, password=None, needs_token=False):
         if auth:
             response = 'NONE'  # to allow enter to be default Y
             while response.lower() not in ('y', 'n', ''):
-                warnings.warn('Using the following GitHub credentials from '
-                              '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
+                print('Using the following GitHub credentials from '
+                      '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
                 response = input(
                     'Use these credentials (if not you will be prompted '
                     'for new credentials)? [Y/n] ')
@@ -39,17 +39,16 @@ def get_credentials(username=None, password=None, needs_token=False):
                 username = auth[0]
                 password = auth[2]
                 if needs_token:
-                    warnings.warn('Interpreting "password" in netrc as a '
-                                  'personal access token')
+                    warnings.warn('Interpreting "password" in netrc as a personal access token')
 
     if not (username or password):
-        warnings.warn(f"Enter your GitHub username and {pwtype} so that API "
-                      "requests aren't as severely rate-limited...")
+        print(f"Enter your GitHub username and {pwtype} so that API "
+               "requests aren't as severely rate-limited...")
         username = input('Username: ')
         password = getpass.getpass('Password: ')
     elif not password:
-        warnings.warn(f"Enter your GitHub {pwtype} so that API "
-                      "requests aren't as severely rate-limited...")
+        print(f"Enter your GitHub {pwtype} so that API "
+               "requests aren't as severely rate-limited...")
         password = getpass.getpass('Password: ')
 
     return username, password
