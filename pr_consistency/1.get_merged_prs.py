@@ -7,6 +7,8 @@ import sys
 import json
 import requests
 
+from common import get_credentials
+
 QUERY_TEMPLATE = """
 {{
   repository(owner: "{owner}", name: "{repository}") {{
@@ -52,7 +54,7 @@ print("The repository this script currently works with is '{}'.\n"
 
 json_filename = 'merged_pull_requests_{}.json'.format(NAME)
 
-TOKEN = input('Enter your GitHub personal token: ')
+TOKEN = get_credentials('N/A', needs_token=True)[1]
 
 headers = {"Authorization": f"Bearer {TOKEN}"}
 

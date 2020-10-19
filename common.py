@@ -18,7 +18,8 @@ BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
 }
 
 
-def get_credentials(username=None, password=None):
+def get_credentials(username=None, password=None, needs_token=False):
+    pwtype = 'personal access token' if needs_token else 'password'
 
     try:
         my_netrc = netrc.netrc()
@@ -37,14 +38,17 @@ def get_credentials(username=None, password=None):
             if response.lower() == 'y' or response == '':
                 username = auth[0]
                 password = auth[2]
+                if needs_token:
+                    warnings.warn('Interpreting "password" in netrc as a '
+                                  'personal access token')
 
     if not (username or password):
-        warnings.warn("Enter your GitHub username and password so that API "
+        warnings.warn(f"Enter your GitHub username and {pwtype} so that API "
                       "requests aren't as severely rate-limited...")
         username = input('Username: ')
         password = getpass.getpass('Password: ')
     elif not password:
-        warnings.warn("Enter your GitHub password so that API "
+        warnings.warn(f"Enter your GitHub {pwtype} so that API "
                       "requests aren't as severely rate-limited...")
         password = getpass.getpass('Password: ')
 
