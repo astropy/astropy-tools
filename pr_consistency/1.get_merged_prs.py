@@ -85,11 +85,6 @@ try:
         for entry in entries:
 
             pr = entry['node']
-
-            if pr['number'] == 1041:
-                from pprint import pprint
-                pprint(pr)
-
             cursor = entry['cursor']
 
             pull_requests[str(pr['number'])] = {'milestone': pr['milestone']['title'] if pr['milestone'] else None,
