@@ -1,116 +1,102 @@
 # The purpose of this script is to download information about all pull
 # requests merged into the master branch of the given repository. This
-# information is downloaded to a JSON file. This includes the 'last
-# modified' date for all pull requests, so that when the script is re-run,
-# only modified or new entries are downloaded. At this time, this script
-# requires the developer version of the pygithub package.
+# information is downloaded to a JSON file.
 
 import os
 import sys
 import json
-
-from datetime import datetime, timedelta
-from github import Github
+import requests
 
 from common import get_credentials
 
-
-def parse_isoformat(string):
-    return datetime.strptime(string, "%Y-%m-%dT%H:%M:%S")
-
+QUERY_TEMPLATE = """
+{{
+  repository(owner: "{owner}", name: "{repository}") {{
+    pullRequests(first:100, orderBy: {{direction: ASC, field: CREATED_AT}}, baseRefName: "master", states: MERGED{after}) {{
+      edges {{
+        node {{
+          title
+          number
+          mergeCommit {{
+            oid
+          }}
+          createdAt
+          updatedAt
+          mergedAt
+          milestone {{
+            title
+          }}
+          labels(first: 10) {{
+            edges {{
+              node {{
+                name
+              }}
+            }}
+          }}
+        }}
+        cursor
+      }}
+    }}
+  }}
+}}
+"""
 
 if sys.argv[1:]:
     REPOSITORY = sys.argv[1]
 else:
     REPOSITORY = 'astropy/astropy'
 
+OWNER = os.path.dirname(REPOSITORY)
 NAME = os.path.basename(REPOSITORY)
 
 print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY))
 
-
-# Get handle to repository
-g = Github(*get_credentials())
-repo = g.get_repo(REPOSITORY)
-
-# We continue from an existing file rather than starting from scratch. To start
-# from scratch, just remove the JSON file
-
 json_filename = 'merged_pull_requests_{}.json'.format(NAME)
 
-if os.path.exists(json_filename):
-    with open(json_filename) as merged:
-        pull_requests = json.load(merged)
-else:
-    pull_requests = {}
+TOKEN = get_credentials('N/A', needs_token=True)[1]
 
-LAST_MODIFIED_DATE = None
-for pr in pull_requests.values():
-    date = parse_isoformat(pr['updated'])
-    if LAST_MODIFIED_DATE is None or date > LAST_MODIFIED_DATE:
-        LAST_MODIFIED_DATE = date
+headers = {"Authorization": f"Bearer {TOKEN}"}
 
-# FIXME: at the moment, because we don't store time zones, to be safe we check
-# for pull requests modified within 24 hours of the cutoff.
-if LAST_MODIFIED_DATE is not None:
-    LAST_MODIFIED_DATE -= timedelta(hours=24)
-else:
-    # With an empty JSON file, we use the date of PR#1
-    LAST_MODIFIED_DATE = datetime(2014, 6, 13, 1, 48, 44)
+cursor = None
 
-print("Last modified date: {0}".format(LAST_MODIFIED_DATE))
-
-# We enclose the following code in a try...finally so that if the updating
-# crashes, we still write out what we had.
+pull_requests = {}
 
 try:
 
-    # Find the maximum issue number
-    max_issues = repo.get_issues(state='closed', sort='created')[0].number
+    while True:
 
-    # repo.get_pulls doesn't seem to get quite all available pull requests
-    # because state:closed seems to miss some PRs that appear with is:closed
-    # so instead we use get_issues and then get the PR objects manually.
-    # This allows us to also only iterate over issues that have been updated
-    # since a certain time.
-    for i, issue in enumerate(repo.get_issues(since=LAST_MODIFIED_DATE, state='closed')):
+        print('cursor:', cursor)
 
-        if issue.pull_request is None:
-            continue
-
-        pr = repo.get_pull(issue.number)
-
-        if not pr.merged:
-            continue
-
-        if pr.base.ref != 'master':
-            continue
-
-        if str(pr.number) in pull_requests:
-            if pr.updated_at > parse_isoformat(pull_requests[str(pr.number)]['updated']):
-                print("Updating entry for pull request #{} ({} of max {})".format(pr.number, i, max_issues))
-            else:
-                print("Entry for pull request #{} is up to date".format(pr.number, i, max_issues))
+        if cursor is None:
+            after = ''
         else:
-            print("Fetching new entry for pull request #{} ({} of max {})".format(pr.number, i, max_issues))
+            after = f', after:"{cursor}"'
 
-        if pr.milestone is None:
-            milestone = None
-        else:
-            milestone = pr.milestone.title
+        query = QUERY_TEMPLATE.format(owner=OWNER, repository=NAME, after=after)
 
-        # Get labels
-        issue = repo.get_issue(pr.number)
-        labels = [label.name for label in issue.labels]
+        request = requests.post('https://api.github.com/graphql', json={'query': query}, headers=headers)
 
-        pull_requests[str(pr.number)] = {'milestone': milestone,
-                                         'title': pr.title,
-                                         'labels': labels,
-                                         'merged': pr.merged_at.isoformat(),
-                                         'updated': pr.updated_at.isoformat(),
-                                         'created': pr.created_at.isoformat(),
-                                         'merge_commit': pr.merge_commit_sha}
+        if request.status_code != 200:
+            raise Exception("Query failed")
+
+        entries = request.json()['data']['repository']['pullRequests']['edges']
+
+        for entry in entries:
+
+            pr = entry['node']
+            cursor = entry['cursor']
+
+            pull_requests[str(pr['number'])] = {'milestone': pr['milestone']['title'] if pr['milestone'] else None,
+                                                'title': pr['title'],
+                                                'labels': [edge['node']['name'] for edge in pr['labels']['edges']],
+                                                'merged': pr['mergedAt'].replace('Z', ''),
+                                                'updated': pr['updatedAt'].replace('Z', ''),
+                                                'created': pr['createdAt'].replace('Z', ''),
+                                                'merge_commit': pr['mergeCommit']['oid'] if pr['mergeCommit'] else None}
+
+        if len(entries) < 100:
+            break
 
 finally:
 
