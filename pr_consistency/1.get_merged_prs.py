@@ -1,5 +1,5 @@
 # The purpose of this script is to download information about all pull
-# requests merged into the master branch of the given repository. This
+# requests merged into the main branch of the given repository. This
 # information is downloaded to a JSON file.
 
 import os
@@ -12,7 +12,7 @@ from common import get_credentials
 QUERY_TEMPLATE = """
 {{
   repository(owner: "{owner}", name: "{repository}") {{
-    pullRequests(first:100, orderBy: {{direction: ASC, field: CREATED_AT}}, baseRefName: "master", states: MERGED{after}) {{
+    pullRequests(first:100, orderBy: {{direction: ASC, field: CREATED_AT}}, baseRefName: "main", states: MERGED{after}) {{
       edges {{
         node {{
           title

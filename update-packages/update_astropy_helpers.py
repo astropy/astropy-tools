@@ -56,7 +56,7 @@ require Python 3.5+. We will open automated update PRs with
 astropy-helpers v3.2.x only for packages that specifically opt in for it
 when they start supporting Python 3.5+ only.
 Please let {1} know or add your package to the list in
-https://github.com/astropy/astropy-procedures/blob/master/update-packages/helpers_3.py
+https://github.com/astropy/astropy-procedures/blob/main/update-packages/helpers_3.py
 
 """).strip()
 
@@ -95,11 +95,11 @@ def open_pull_request(fork, repo):
         print("Branch {0} already exists".format(BRANCH))
         return
 
-    # Update to the latest upstream master
-    print("Updating to the latest upstream master.")
+    # Update to the latest upstream main
+    print("Updating to the latest upstream main.")
     run_command('git remote add upstream {0}'.format(repo.clone_url))
-    run_command('git fetch upstream master')
-    run_command('git checkout upstream/master')
+    run_command('git fetch upstream main')
+    run_command('git checkout upstream/main')
     run_command('git checkout -b {0}'.format(BRANCH))
 
     # Initialize submodule
@@ -142,7 +142,7 @@ def open_pull_request(fork, repo):
 
     repo.create_pull(title='Update astropy-helpers to {0}'.format(HELPERS_TAG),
                      body=HELPERS_UPDATE_MESSAGE_BODY.format(HELPERS_TAG, report_user),
-                     base='master',
+                     base='main',
                      head='{0}:{1}'.format(fork.owner.login, BRANCH))
 
 

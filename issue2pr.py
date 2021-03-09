@@ -37,7 +37,7 @@ GITHUB_API_BASE_URL = 'https://{0}/repos/'.format(GITHUB_API_HOST)
 
 
 def issue_to_pr(issuenum, srcbranch, repo='astropy', sourceuser='',
-                targetuser='astropy', targetbranch='master',
+                targetuser='astropy', targetbranch='main',
                 baseurl=GITHUB_API_BASE_URL):
     """
     Attaches code to an issue, converting a regular issue into a pull request.
@@ -120,8 +120,8 @@ def main(argv=None):
                         'user/organization the pull request should pull into '
                         '(default: astropy)')
     parser.add_argument('--targbranch', metavar='BRANCH', type=str,
-                        default='master', help='The branch name the pull '
-                        'request should be pulled into (default: master)')
+                        default='main', help='The branch name the pull '
+                        'request should be pulled into (default: main)')
     parser.add_argument('--baseurl', metavar='URL', type=str,
                         default=GITHUB_API_BASE_URL, help='The base '
                         'URL for github (default: %(default)s)')

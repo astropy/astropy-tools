@@ -31,7 +31,7 @@ if os.environ.get('LOCAL_CHANGELOG'):
     with open(CHANGELOG) as f:
         changelog_lines = f.readlines()
 else:
-    CHANGELOG = 'https://raw.githubusercontent.com/{}/master/{}'.format(REPOSITORY, CHANGELOG_NAME)
+    CHANGELOG = 'https://raw.githubusercontent.com/{}/main/{}'.format(REPOSITORY, CHANGELOG_NAME)
     changelog_lines = requests.get(CHANGELOG).text.splitlines()
 
 TMPDIR = tempfile.mkdtemp()
