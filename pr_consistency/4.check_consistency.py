@@ -68,7 +68,8 @@ BRANCH_CLOSED_DICT = {'astropy/astropy': {
                           'v3.1.x': parse_isoformat('2019-04-15T16:00:00'),
                           'v3.2.x': parse_isoformat('2019-11-10T16:00:00'),
                           'v4.0.x': None,
-                          'v4.1.x': None},
+                          'v4.1.x': parse_isoformat('2020-11-25T06:46:46'),
+                          'v4.2.x': None},
                       }
 
 BRANCH_CLOSED_DICT['astropy/astropy-helpers'] = BRANCH_CLOSED_DICT['astropy/astropy']
