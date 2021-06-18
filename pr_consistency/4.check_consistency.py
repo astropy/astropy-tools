@@ -109,7 +109,10 @@ MANUAL_MERGES_DICT = {
                         '11391': ('v4.2.x'),
                         '11401': ('v4.2.x'),
                         '11250': ('v4.2.x'),
-                        '9183': ('v4.3.x')
+                        '9183': ('v4.3.x'),
+                        '11756': ('v4.3.x'), # bot did this one in 11766
+                        '11724': ('v4.3.x'), # bot did this one in 11799
+                        '11756': ('v4.3.x'), # bot did this one in 11766
                     },
     'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
                                         'v3.0.x', 'v3.1.x', 'v3.2.x', 'v4.0.x'),
