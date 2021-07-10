@@ -8,6 +8,7 @@
 import os
 import sys
 import json
+import re
 import subprocess
 import tempfile
 from collections import defaultdict
@@ -45,15 +46,6 @@ with open(f'merged_pull_requests_{NAME}.json') as merged:
 pr_branches = defaultdict(list)
 
 
-def check_merged_pr(log, msg):
-    count = log.count(msg)
-    if count > 0:
-        pr_branches[pr].append(branch)
-        if count > 1:
-            color_print(f"Pull request {pr} appears {count} times in branch {branch}", 'red')
-    return count
-
-
 try:
     # Set up repository
     color_print(f'Cloning {REPOSITORY}', 'green')
@@ -74,23 +66,19 @@ try:
 
         # Change branch
         color_print(f'Switching to branch {branch}', 'green')
-        subprocess.call(f'git reset --hard', shell=True)
+        subprocess.call('git reset --hard', shell=True)
         subprocess.call('git clean -fxd', shell=True)
         subprocess.call(f'git checkout {branch}', shell=True)
         if ORIGIN:
             subprocess.call(f'git reset --hard {ORIGIN}/{branch}', shell=True)
 
         # Extract log:
-        # With merges only for the historical backport script
-        log_merges = subprocess.check_output('git log --first-parent', shell=True).decode('utf-8')
-        # Full log for the backport bot
-        log_full = subprocess.check_output('git log', shell=True).decode('utf-8')
+        log = subprocess.check_output('git log', shell=True).decode('utf-8')
 
         # Check for the presence of the PR in the log
-        for pr in merged_prs:
-            count = check_merged_pr(log_merges, f"Merge pull request #{pr} ")
-            if count == 0:
-                check_merged_pr(log_full, f"Backport PR #{pr}:")
+        for pr in (re.findall(r'Merge pull request #(\d+) ', log) +
+                   re.findall(r'Backport PR #(\d+):', log)):
+            pr_branches[pr].append(branch)
 
 finally:
     os.chdir(STARTDIR)
