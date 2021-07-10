@@ -52,7 +52,7 @@ NAME = os.path.basename(REPOSITORY)
 print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY))
 
-json_filename = 'merged_pull_requests_{}.json'.format(NAME)
+json_filename = f'merged_pull_requests_{NAME}.json'
 
 TOKEN = get_credentials('N/A', needs_token=True)[1]
 

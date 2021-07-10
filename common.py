@@ -31,7 +31,7 @@ def get_credentials(username=None, password=None, needs_token=False):
             response = 'NONE'  # to allow enter to be default Y
             while response.lower() not in ('y', 'n', ''):
                 print('Using the following GitHub credentials from '
-                      '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
+                      '~/.netrc: {}/{}'.format(auth[0], '*' * 8))
                 response = input(
                     'Use these credentials (if not you will be prompted '
                     'for new credentials)? [Y/n] ')
