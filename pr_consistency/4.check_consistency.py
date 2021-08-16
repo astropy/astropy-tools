@@ -110,9 +110,6 @@ MANUAL_MERGES_DICT = {
                         '11401': ('v4.2.x'),
                         '11250': ('v4.2.x'),
                         '9183': ('v4.3.x'),
-                        '11756': ('v4.3.x'), # bot did this one in 11766
-                        '11724': ('v4.3.x'), # bot did this one in 11799
-                        '11756': ('v4.3.x'), # bot did this one in 11766
                     },
     'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
                                         'v3.0.x', 'v3.1.x', 'v3.2.x', 'v4.0.x'),
@@ -154,13 +151,13 @@ CLOSED_BY_ANOTHER = {
     '2676': '2680'
 }
 
-with open('merged_pull_requests_{}.json'.format(NAME)) as merged:
+with open(f'merged_pull_requests_{NAME}.json') as merged:
     merged_prs = json.load(merged)
 
-with open('pull_requests_changelog_sections_{}.json'.format(NAME)) as merged:
+with open(f'pull_requests_changelog_sections_{NAME}.json') as merged:
     changelog_prs = json.load(merged)
 
-with open('pull_requests_branches_{}.json'.format(NAME)) as merged:
+with open(f'pull_requests_branches_{NAME}.json') as merged:
     pr_branches = json.load(merged)
 
 
@@ -218,11 +215,11 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
             status.append(('Labelled as no-changelog-entry-needed but in changelog', INVALID))
         else:
             if milestone is None:
-                status.append(('In changelog ({0}) but not milestoned'.format(cl_version)))
+                status.append(f'In changelog ({cl_version}) but not milestoned')
             elif milestone.startswith(cl_version):
-                status.append(('In correct section of changelog ({0})'.format(cl_version), VALID))
+                status.append((f'In correct section of changelog ({cl_version})', VALID))
             else:
-                status.append(('Milestone is {0} but change log section is {1}'.format(milestone, cl_version), INVALID))
+                status.append((f'Milestone is {milestone} but change log section is {cl_version}', INVALID))
     else:
         if affect_dev_in_labels:
             status.append(('Labelled as affects-dev and not in changelog', VALID))
@@ -233,9 +230,9 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
                 status.append(('Not in changelog (and no milestone) but not labelled affects-dev', INVALID))
             else:
                 if milestone.startswith('v0.1'):
-                    status.append(('Not in changelog (but ok since milestoned as {0})'.format(milestone), VALID))
+                    status.append((f'Not in changelog (but ok since milestoned as {milestone})', VALID))
                 else:
-                    status.append(('Not in changelog (milestoned as {0}) but not labelled as affects-dev'.format(milestone), INVALID))
+                    status.append((f'Not in changelog (milestoned as {milestone}) but not labelled as affects-dev', INVALID))
 
     # Now check for consistency between PR milestone and branch in which the PR
     # appears - can only check this if the PR milestone is set. If it isn't
@@ -256,28 +253,28 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
             for i in range(index):
                 if BRANCHES[i] in branches:
                     if BRANCHES[i] in REVERTED_FROM_BRANCH.get(pr, []):
-                        status.append(('Pull request was in branc {0} but has been reverted later.'.format(BRANCHES[i]), VALID))
+                        status.append((f'Pull request was in branc {BRANCHES[i]} but has been reverted later.', VALID))
                     else:
-                        status.append(('Pull request was included in branch {0}'.format(BRANCHES[i]), INVALID))
+                        status.append((f'Pull request was included in branch {BRANCHES[i]}', INVALID))
                 else:
                     pass  # all good
 
             for i in range(index, len(BRANCHES)):
                 if BRANCHES[i] in branches:
-                    status.append(('Pull request was included in branch {0}'.format(BRANCHES[i]), VALID))
+                    status.append((f'Pull request was included in branch {BRANCHES[i]}', VALID))
                 else:
                     if BRANCHES[i] in MANUAL_MERGES.get(pr, []):
-                        status.append(('Pull request was included in branch {0} (manually merged)'.format(BRANCHES[i]), VALID))
+                        status.append((f'Pull request was included in branch {BRANCHES[i]} (manually merged)', VALID))
                     elif BRANCHES[i] in EXPECTED_MISSING.get(pr, []):
-                        status.append(('Pull request was not included in branch {0} (but whitelisted as ok)'.format(BRANCHES[i]), VALID))
+                        status.append((f'Pull request was not included in branch {BRANCHES[i]} (but whitelisted as ok)', VALID))
                     else:
                         if BRANCH_CLOSED[BRANCHES[i]] is not None:
                             if merge_date > BRANCH_CLOSED[BRANCHES[i]]:
-                                status.append(('Pull request was not included in branch {0} (but was merged after branch closed)'.format(BRANCHES[i]), VALID))
+                                status.append((f'Pull request was not included in branch {BRANCHES[i]} (but was merged after branch closed)', VALID))
                             else:
-                                status.append(('Pull request was not included in branch {0} (but too late to fix)'.format(BRANCHES[i]), CANTFIX))
+                                status.append((f'Pull request was not included in branch {BRANCHES[i]} (but too late to fix)', CANTFIX))
                         else:
-                            status.append(('Pull request was not included in branch {0}. Backport command included below.'.format(BRANCHES[i]), INVALID))
+                            status.append((f'Pull request was not included in branch {BRANCHES[i]}. Backport command included below.', INVALID))
                             backports[BRANCHES[i]].append(pr)
 
         else:
@@ -295,13 +292,13 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 
     url = ''
     if SHOW_URL_REPO:
-        url = 'https://github.com/{}/issues/{}'.format(SHOW_URL_REPO, pr)
+        url = f'https://github.com/{SHOW_URL_REPO}/issues/{pr}'
     if HTML_OUTPUT:
         print('<p>')
-        print('<a href="{2}">#{0}</a> (Milestone: {1})'.format(pr, milestone, url))
+        print(f'<a href="{url}">#{pr}</a> (Milestone: {milestone})')
         print('<ul>')
         for msg, color in status:
-            print('<li style="color:{color};">{msg}</li>'.format(msg=msg, color=color))
+            print(f'<li style="color:{color};">{msg}</li>')
         print('</ul>\n</p>')
     else:
         print("#{0}{2} (Milestone: {1})".format(pr, milestone, ' ('+url+')'))
@@ -310,21 +307,21 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
 
 for version in sorted(backports.keys()):
     if HTML_OUTPUT:
-        print('<h1>Backports to {}</h1>'.format(version))
+        print(f'<h1>Backports to {version}</h1>')
         print('{} merges in total. These are in merge order:'.format(
             len(backports[version])))
         print('<pre>')
         for pr in backports[version]:
             prorurl = '#{}'.format('pr')
             if SHOW_URL_REPO:
-                url = 'https://github.com/{}/issues/{}'.format(SHOW_URL_REPO, pr)
-                prorurl = '<a href="{}">#{}</a>'.format(url, pr)
+                url = f'https://github.com/{SHOW_URL_REPO}/issues/{pr}'
+                prorurl = f'<a href="{url}">#{pr}</a>'
 
             print('# Pull request {}: {}'.format(prorurl, merged_prs[pr]['title']))
             print('git cherry-pick -m 1 {}'.format(merged_prs[pr]['merge_commit']))
         print('</pre>')
     else:
-        color_print('Backports to {0} (in merge order)'.format(version), 'blue')
+        color_print(f'Backports to {version} (in merge order)', 'blue')
         for pr in backports[version]:
-            print('# Pull request #{0}: {1}'.format(pr, merged_prs[pr]['title']))
-            print('git cherry-pick -m 1 {0}'.format(merged_prs[pr]['merge_commit']))
+            print('# Pull request #{}: {}'.format(pr, merged_prs[pr]['title']))
+            print('git cherry-pick -m 1 {}'.format(merged_prs[pr]['merge_commit']))

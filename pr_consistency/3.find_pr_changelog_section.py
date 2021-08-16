@@ -31,7 +31,7 @@ if os.environ.get('LOCAL_CHANGELOG'):
     with open(CHANGELOG) as f:
         changelog_lines = f.readlines()
 else:
-    CHANGELOG = 'https://raw.githubusercontent.com/{}/master/{}'.format(REPOSITORY, CHANGELOG_NAME)
+    CHANGELOG = f'https://raw.githubusercontent.com/{REPOSITORY}/master/{CHANGELOG_NAME}'
     changelog_lines = requests.get(CHANGELOG).text.splitlines()
 
 TMPDIR = tempfile.mkdtemp()
@@ -77,5 +77,5 @@ for line in changelog_lines:
         content += line
     previous = line
 
-with open('pull_requests_changelog_sections_{}.json'.format(NAME), 'w') as f:
+with open(f'pull_requests_changelog_sections_{NAME}.json', 'w') as f:
     json.dump(changelog_prs, f, sort_keys=True, indent=2)

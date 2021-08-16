@@ -8,6 +8,7 @@
 import os
 import sys
 import json
+import re
 import subprocess
 import tempfile
 from collections import defaultdict
@@ -25,7 +26,7 @@ print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY_NAME))
 
 
-REPOSITORY = 'git://github.com/{}.git'.format(REPOSITORY_NAME)
+REPOSITORY = f'git://github.com/{REPOSITORY_NAME}.git'
 NAME = os.path.basename(REPOSITORY_NAME)
 
 DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain the clone between runs
@@ -37,16 +38,17 @@ STARTDIR = os.path.abspath('.')
 BRANCHES = get_branches(REPOSITORY_NAME)
 
 # Read in a list of all the PRs
-with open('merged_pull_requests_{}.json'.format(NAME)) as merged:
+with open(f'merged_pull_requests_{NAME}.json') as merged:
     merged_prs = json.load(merged)
 
 # Set up a dictionary where each key will be a PR and each value will be a list
 # of branches in which the PR is present
 pr_branches = defaultdict(list)
 
+
 try:
     # Set up repository
-    color_print('Cloning {0}'.format(REPOSITORY), 'green')
+    color_print(f'Cloning {REPOSITORY}', 'green')
     os.chdir(DIRTOCLONEIN)
     if os.path.isdir(NAME):
         # already exists... assume its the right thing
@@ -54,37 +56,32 @@ try:
                     'existing clone'.format(NAME), 'yellow')
         os.chdir(NAME)
         if ORIGIN:
-            subprocess.call('git fetch {}'.format(ORIGIN), shell=True)
+            subprocess.call(f'git fetch {ORIGIN}', shell=True)
     else:
-        subprocess.call('git clone {0}'.format(REPOSITORY), shell=True)
+        subprocess.call(f'git clone {REPOSITORY}', shell=True)
         os.chdir(NAME)
 
     # Loop over branches and find all PRs in the branch
     for branch in BRANCHES:
 
         # Change branch
-        color_print('Switching to branch {0}'.format(branch), 'green')
-        subprocess.call('git reset --hard'.format(), shell=True)
+        color_print(f'Switching to branch {branch}', 'green')
+        subprocess.call('git reset --hard', shell=True)
         subprocess.call('git clean -fxd', shell=True)
-        subprocess.call('git checkout {0}'.format(branch), shell=True)
+        subprocess.call(f'git checkout {branch}', shell=True)
         if ORIGIN:
-            subprocess.call('git reset --hard {}/{}'.format(ORIGIN, branch), shell=True)
+            subprocess.call(f'git reset --hard {ORIGIN}/{branch}', shell=True)
 
-        # Extract entire log
-        log = subprocess.check_output('git log --first-parent', shell=True).decode('utf-8')
+        # Extract log:
+        log = subprocess.check_output('git log', shell=True).decode('utf-8')
 
         # Check for the presence of the PR in the log
-        for pr in merged_prs:
-            count = log.count("Merge pull request #{0} ".format(pr))
-            if count == 0:
-                pass  # not in branch
-            else:
-                pr_branches[pr].append(branch)
-                if count > 1:
-                    color_print("Pull request {0} appears {1} times in branch {2}".format(pr, count, branch), 'red')
+        for pr in (re.findall(r'Merge pull request #(\d+) ', log) +
+                   re.findall(r'Backport PR #(\d+):', log)):
+            pr_branches[pr].append(branch)
 
 finally:
     os.chdir(STARTDIR)
 
-with open('pull_requests_branches_{}.json'.format(NAME), 'w') as f:
+with open(f'pull_requests_branches_{NAME}.json', 'w') as f:
     json.dump(pr_branches, f, sort_keys=True, indent=2)
