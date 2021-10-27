@@ -6,7 +6,7 @@ import os
 import github3
 
 
-def main(token, repo, args,
+def main(token, repo,
          verbose=False, dry_run=False, n_min_pr=1,
          oldest_date=None):
     """
@@ -49,8 +49,9 @@ def main(token, repo, args,
     # By default PRs are returned sorted in descending order by date
     # of creation.
     for pr in astropy_org_repo.pull_requests(state='closed'):
-        if pr.created_at.date() < date(2019, 12, 31):
-            print("Too old, breaking...")
+        if pr.created_at.date() < too_old:
+            if verbose:
+                print(f"Reached PRs older than {too_old}, breaking...")
             break
 
         author = pr.user.login
@@ -69,15 +70,17 @@ def main(token, repo, args,
 
         if not astropy_org.is_member(author):
             if verbose:
-                print(author)
+                print(f'\t{author} is not in the astropy org')
             not_in.append(author)
         else:
             if verbose:
-                print(f"Already member: {author}")
+                print(f"\t{author} is already in the astropy org")
 
         already_tried.append(author)
 
-    print(not_in)
+    if verbose:
+        print(f'These people are not in the astropy org: {not_in}')
+        print('Checking number of pull requests')
 
     to_add = []
     for author in not_in:
@@ -88,17 +91,16 @@ def main(token, repo, args,
 
     to_add = sorted(to_add)
 
-    for person in to_add:
-        gh = g.user(person)
-        print(f"Name: {gh.name} GitHub login:{person}")
+    if verbose:
+        print(f'Inviting these people to join the astropy org: {to_add}')
 
     for person in to_add:
         if verbose:
-            print(f"adding {person} to astropy org...")
+            print(f"\tadding {person} to astropy org...")
         if not dry_run:
             astropy_org.add_or_update_membership(person, role='member')
         else:
-            print(f'dry run: would have invited {person}')
+            print(f'\tDRY RUN: would have invited {person}')
 
 
 if __name__ == '__main__':
@@ -126,7 +128,7 @@ if __name__ == '__main__':
                              'date. Default is one year from date script '
                              ' is run.')
 
-    parser.add_argument('--dry-run',, action='store_true',
+    parser.add_argument('--dry-run', action='store_true',
                         help='Run the script but do not actually send'
                              ' any invitations.')
 
@@ -134,12 +136,11 @@ if __name__ == '__main__':
                         help='Display more output while running.')
     args = parser.parse_args()
 
-    print(args)
-
     token = os.getenv('GITHUB_TOKEN', None)
     if token is None:
         raise RuntimeError('You need to set a GitHub token for this script'
                            ' to work. If you want to see what the script would'
                            ' do without sending invitations use the --dry-run'
                            ' option.')
-    main(token, args.repo, )
+    main(token, args.repo, verbose=args.verbose,
+         dry_run=args.dry_run, n_min_pr=args.num_pr, oldest_date=args.date)
