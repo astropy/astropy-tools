@@ -26,7 +26,7 @@ QUERY_TEMPLATE = """
           milestone {{
             title
           }}
-          labels(first: 10) {{
+          labels(first: 100) {{
             edges {{
               node {{
                 name

@@ -211,8 +211,8 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
         if affect_dev_in_labels:
             pass  # don't print for now since there are too many
             # status.append(('Labelled as affects-dev but in changelog ({0})'.format(cl_version), INVALID))
-        elif 'no-changelog-entry-needed' in labels:
-            status.append(('Labelled as no-changelog-entry-needed but in changelog', INVALID))
+        elif 'no-changelog-entry-needed' in labels or 'skip-changelog-checks' in labels:
+            status.append(('Labelled as no-changelog-entry-needed or skip-changelog-checks but in changelog', INVALID))
         else:
             if milestone is None:
                 status.append(f'In changelog ({cl_version}) but not milestoned')
@@ -223,8 +223,8 @@ for pr in sorted(merged_prs, key=lambda pr: merged_prs[pr]['merged']):
     else:
         if affect_dev_in_labels:
             status.append(('Labelled as affects-dev and not in changelog', VALID))
-        elif 'no-changelog-entry-needed' in labels:
-            status.append(('Labelled as no-changelog-entry-needed and not in changelog', VALID))
+        elif 'no-changelog-entry-needed' in labels or 'skip-changelog-checks' in labels:
+            status.append(('Labelled as no-changelog-entry-needed or skip-changelog-checks and not in changelog', VALID))
         else:
             if milestone is None:
                 status.append(('Not in changelog (and no milestone) but not labelled affects-dev', INVALID))
