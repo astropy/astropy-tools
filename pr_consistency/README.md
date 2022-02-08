@@ -33,7 +33,7 @@ The following shows an example of a typical session. We start off by updating
 the JSON file so that it is up-to-date with the pull requests merged into
 Astropy:
 
-    $ python 1.get_merged_prs.py 
+    $ python 1.get_merged_prs.py
     Using the following GitHub credentials from ~/.netrc: username/********
     Use these credentials (if not you will be prompted for new credentials)? [Y/n] Y
     Fetching new entry for pull request #5008
@@ -45,7 +45,7 @@ maintenance branches they are included in. Note that this includes some
 preliminary information about issues found at this stage (but these can't
 typically be fixed since it would mean changing the history):
 
-    $ python 2.find_pr_branches.py 
+    $ python 2.find_pr_branches.py
     Cloning git://github.com/astropy/astropy.git
     Cloning into 'astropy'...
     remote: Counting objects: 103101, done.
@@ -92,8 +92,8 @@ typically be fixed since it would mean changing the history):
 
 We then check which sections of the changelog pull requests appear in:
 
-    $ python 3.find_pr_changelog_section.py 
-    
+    $ python 3.find_pr_changelog_section.py
+
 Note that we now have three JSON files with information from the above three
 scripts:
 
@@ -101,10 +101,14 @@ scripts:
     merged_pull_requests.json
     pull_requests_branches.json
     pull_requests_changelog_sections.json
-    
+
 Finally, we run the script to check the consistency of all the information:
 
-    $ python 4.check_consistency.py 
+    $ python 4.check_consistency.py > consistency.html
+
+and opening the resulting ``consistency.html`` file should show information
+like::
+
     #4060 (Milestone: v1.0.10)
       - Milestone is v1.0.10 but change log section is v1.0.5
       - Pull request was included in branch v1.0.x
@@ -136,10 +140,23 @@ Finally, we run the script to check the consistency of all the information:
 If you want to see all results even pull requests that are valid, you can change
 ``SHOW_VALID`` to ``True`` in ``4.check_consistency.py ``.
 
+The end of the ``consistency.html`` page will then show a series of
+``git cherry-pick`` commands to update the release branch with the PRs that
+are needed to make the milestones and branches consistent - though note
+that most PRs should ideally be backported via the backport bot.
+
+Go through the commands one at a time, following the cherry-picking procedure
+described above. If for some reason you determine the github milestone was in
+error and the backporting is impossible, re-label the issue on github and move
+on.  Also, whenever you backport a PR, it's useful to leave a comment in the
+issue along the lines of "backported this to v1.3.x as <SHA>" so that it's clear
+that the backport happened to others who might later look.
+
+
 Updating for New Branches
 -------------------------
 
-When you add a new branch to these scripts, it is important to add the new 
+When you add a new branch to these scripts, it is important to add the new
 branch name in *both* of these:
 
 * ``2.find_pr_branches.py``
