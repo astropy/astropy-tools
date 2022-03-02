@@ -2,8 +2,95 @@ from argparse import ArgumentParser
 from datetime import date, datetime
 import os
 
+import requests
+
 # Package name is github3.py
 import github3
+
+
+# failed_invitations from the GitHub REST API is not part of the github3.py
+# API, so it is added here.
+def get_failed_invitations(token, org_url):
+    """
+    Use the GitHub API to get a list of failed invitations.
+
+    NOTE: if failed_invitations ever becomes part of github3.py API
+          then this can be removed.
+
+    Parameters
+    ----------
+
+    token: str
+        GitHub authentication token.
+
+    org_url: str
+        URL for API requests for organization of interest.
+
+    Returns
+    -------
+
+    List of GitHub invitations that failed
+        See https://docs.github.com/en/rest/reference/orgs#list-failed-organization-invitations
+        for details of response content.
+    """
+    headers = {"Authorization": f"token {token}"}
+    failed_url = org_url + '/failed_invitations'
+    failed_invites = requests.get(failed_url,
+                                  headers=headers)
+    if failed_invites.status_code != 200:
+        raise RuntimeError("Attempt to retrieve failed invitations from "
+                           f"{failed_url} resulted in error "
+                           f"{failed_invites} {failed_invites.reason}")
+    return {f['login']: f for f in failed_invites.json()}
+
+
+def check_send_invitation(failed_invite, min_gap_days=365):
+    """
+    Decide whether a new invitation should be sent.
+
+    Invitations will only be sent if
+
+    1. The reason for failure is that a previous invitation expired without
+       action AND
+    2. The expiration was at least ``minimum_gap`` months ago.
+
+    Parameters
+    ----------
+
+    failed_invite : dict
+        A failed invitation from the GitHub API.
+
+    min_gap_days : int, optional
+        Minimum time in days from the expiration of a prior invitation
+        until a new invitation will be sent.
+    """
+    # Don't include the current GitHub cutoff of "7 days" in case they decide
+    # to change that in the future.
+    expired_fail_message = ("Invitation expired. User did not accept "
+                            "this invite for")
+
+    expired = failed_invite['failed_reason'].startswith(expired_fail_message)
+    if not expired:
+        fail_mesage = ('Failed because previous invitation did not expire. '
+                       'Instead, the previous invitation failed because '
+                       f'{failed_invite["failed_reason"]}')
+        fail_mesage
+
+    last_expire = datetime.fromisoformat(failed_invite['failed_at'])
+    now = datetime.now(tz=last_expire.tzinfo)
+
+    # Add 1 because that is easier than finding fractions of a day.
+    # Also, we don't really care about fractional days here.
+    elapsed = (now - last_expire).days + 1
+    if elapsed < min_gap_days:
+        fail_message = ('Failed because the time elapsed since the most '
+                        f'recent invitation, {elapsed} days, is less '
+                        f'than the minimum required gap of '
+                        f'{min_gap_days} days')
+        return fail_message
+
+    # empty string means no need to fail invite
+    return ''
 
 
 def main(token, repo,
@@ -29,7 +116,6 @@ def main(token, repo,
     """
 
     g = github3.login(token=token)
-
     astropy_org_repo = g.repository('astropy', repo)
     astropy_org = g.organization('astropy')
 
@@ -48,6 +134,9 @@ def main(token, repo,
 
     # By default PRs are returned sorted in descending order by date
     # of creation.
+    if verbose:
+        print("Getting merged PRs")
+
     for pr in astropy_org_repo.pull_requests(state='closed'):
         if pr.created_at.date() < too_old:
             if verbose:
@@ -82,8 +171,16 @@ def main(token, repo,
         print(f'These people are not in the astropy org: {not_in}')
         print('Checking number of pull requests')
 
+    failed_invites = get_failed_invitations(token, astropy_org.url)
+    failed_invitees = failed_invites.keys()
     to_add = []
     for author in not_in:
+        if author in failed_invitees:
+            reason_to_fail = check_send_invitation(failed_invites[author])
+            if reason_to_fail:
+                print(f"{author} will not be invited because {reason_to_fail}")
+                continue
+
         if verbose:
             print(f"{author} has {pr_count[author]} PRs")
         if pr_count[author] >= n_min_pr:
