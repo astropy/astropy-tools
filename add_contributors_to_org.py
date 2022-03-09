@@ -297,7 +297,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    token = os.getenv('GITHUB_TOKEN', None)
+    token = os.getenv('ORG_INVITE_TOKEN', None)
     if token is None:
         raise RuntimeError('You need to set a GitHub token for this script'
                            ' to work. If you want to see what the script would'

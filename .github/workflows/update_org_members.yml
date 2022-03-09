@@ -23,6 +23,6 @@ jobs:
 
     - name: Perform copy
       env:
-        BINSTAR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }}
       run: |
         python add_contributors_to_org.py --dry-run --verbose coordinated_package_policies.json
