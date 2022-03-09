@@ -1,0 +1,28 @@
+# GitHub Actions workflow for auto-inviting org members to human intervention.
+#
+# The file coordinate_package_policies.json contains the the thresholds for
+# triggering addition for each of the coordinate packages.
+
+name: Invite organzation members based on merged PRs
+
+on:
+  schedule:
+    # Run once a day at 22:14 UTC
+    - cron: '14 22 * * *'
+
+jobs:
+  invite_members:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/setup-python@v2
+
+    - name: Install dependencies
+      run: pip install github3.py
+
+    - name: Perform copy
+      env:
+        BINSTAR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        python add_contributors_to_org.py --dry-run --verbose coordinated_package_policies.json
