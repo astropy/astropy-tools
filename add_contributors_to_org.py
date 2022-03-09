@@ -119,7 +119,10 @@ def process_invites_for_repo(token, repo,
     g = github3.login(token=token)
     astropy_org_repo = g.repository('astropy', repo)
     astropy_org = g.organization('astropy')
+
+    # Build lists of a couple of categories we should skip invites for
     astropy_blocked = [b.login for b in astropy_org.blocked_users()]
+    astropy_open_invitiation = [i.login for i in astropy_org.invitations()]
 
     already_tried = []
 
@@ -153,6 +156,8 @@ def process_invites_for_repo(token, repo,
             pr_count[author] += 1
             continue
         elif (author in astropy_blocked):
+            continue
+        elif (author in astropy_open_invitiation):
             continue
         elif (author == 'ghost'):
             # ghost is the login for any user who has deleted their account
