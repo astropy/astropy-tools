@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from datetime import date, datetime
+import json
 import os
 
 import requests
@@ -93,9 +94,9 @@ def check_send_invitation(failed_invite, min_gap_days=365):
     return ''
 
 
-def main(token, repo,
-         verbose=False, dry_run=False, n_min_pr=1,
-         oldest_date=None):
+def process_invites_for_repo(token, repo,
+                             verbose=False, dry_run=False, n_min_pr=1,
+                             oldest_date=None, min_invite_gap_days=365):
     """
     Get list of contributors to a repository that are not currently
     members of the Astropy GitHub organization and send them an
@@ -126,6 +127,8 @@ def main(token, repo,
     pr_count = {}
 
     if oldest_date is not None:
+        if isinstance(oldest_date, str):
+            oldest_date = date.fromisoformat(oldest_date)
         too_old = oldest_date
     else:
         # Go back one year from now
@@ -200,37 +203,98 @@ def main(token, repo,
             print(f'\tDRY RUN: would have invited {person}')
 
 
+def main(token, args):
+    """
+    Process command line arguments and drive generation of
+    invitations.
+
+    Parameters
+    ----------
+
+    token : str
+        A GitHub token with sufficient permissions to issue invitations
+        to the astropy GitHub organization.
+    """
+
+    # Figure out whether we got a repo name or a json file.
+    repo_or_json = args.repo_or_json_file
+
+    try:
+        with open(repo_or_json) as f:
+            repos = json.load(f)
+    except FileNotFoundError:
+        # Assume we got a repo name
+        repos = {}
+
+    if not repos:
+        # No json file, so construct dict from arguments
+        repos = {
+            repo_or_json: {
+                "min_merged_prs": args.num_pr,
+                "only_prs_since": args.date,
+                "min_time_between_invites_days": args.min_invite_gap,
+            }
+        }
+        if args.verbose:
+            print(f'Constructed settings {repos}')
+
+    for repo, settings in repos.items():
+        if args.verbose:
+            print(f'Processing {repo=}')
+        process_invites_for_repo(token, repo,
+                                 n_min_pr=settings["min_merged_prs"],
+                                 oldest_date=settings["only_prs_since"],
+                                 min_invite_gap_days=settings['min_time_between_invites_days'],
+                                 verbose=args.verbose,
+                                 dry_run=args.dry_run)
+
+
+
 if __name__ == '__main__':
 
     description = ('Check for contributors to astropy packages'
                    ' who are not in the astropy GitHub'
-                   ' organization and send them an invitation.\n'
+                   ' organization and send them an invitation.\n\n'
                    'Set the environment variable GITHUB_TOKEN to a valid'
                    ' GitHub token with permission to send invitations'
                    ' to the organization.')
 
     parser = ArgumentParser(description=description)
 
-    parser.add_argument('repo',
+    parser.add_argument('repo_or_json_file',
                         help='Name of repository in the astropy GitHub '
                              'organization to check for contributors '
-                             'who are not yet members of the organization')
+                             'who are not yet members of the organization. '
+                             '\nAlternatively, a json file can be specified '
+                             'that includes one or more repo names and '
+                             'settings for each repo.\n\n'
+                             'NOTE: Settings in a json file override command '
+                             'line settings.')
 
-    parser.add_argument('--num-pr', '-n', action='store', default=2, type=int,
+    parser.add_argument('--num-pr', '-n', action='store',
+                        default=2, type=int,
                         help='Minimum number of merged PRs contributor must '
                               'have to be added to organization.')
 
     parser.add_argument('--date', '-d', type=date.fromisoformat,
                         help='Only consider pull requests made after this '
                              'date. Default is one year from date script '
-                             ' is run.')
+                             'is run.')
+
+    parser.add_argument('--min-invite-gap', '-m', action='store',
+                        default=365, type=int,
+                        help='Minimum gap, in days, between the expiration of '
+                             'a previous invitation and the sending of a new '
+                             'one.')
 
     parser.add_argument('--dry-run', action='store_true',
-                        help='Run the script but do not actually send'
-                             ' any invitations.')
+                        help='Run the script but do not actually send '
+                             'any invitations. The *only* action skipped '
+                             'is sending the invitations.')
 
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Display more output while running.')
+
     args = parser.parse_args()
 
     token = os.getenv('GITHUB_TOKEN', None)
@@ -239,5 +303,7 @@ if __name__ == '__main__':
                            ' to work. If you want to see what the script would'
                            ' do without sending invitations use the --dry-run'
                            ' option.')
-    main(token, args.repo, verbose=args.verbose,
-         dry_run=args.dry_run, n_min_pr=args.num_pr, oldest_date=args.date)
+
+    main(token, args)
+    # main(token, args.repo, verbose=args.verbose,
+    #      dry_run=args.dry_run, n_min_pr=args.num_pr, oldest_date=args.date)
