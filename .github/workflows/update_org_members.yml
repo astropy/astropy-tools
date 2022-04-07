@@ -7,7 +7,7 @@ name: Invite organzation members based on merged PRs
 
 on:
   schedule:
-    # Run once a day at 22:14 UTC
+    # Run once a day at 22:14 UTC (arbitrary time)
     - cron: '14 22 * * *'
 
 jobs:
