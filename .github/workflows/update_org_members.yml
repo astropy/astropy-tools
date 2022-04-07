@@ -3,7 +3,7 @@
 # The file coordinate_package_policies.json contains the thresholds for
 # triggering addition for each of the coordinated packages.
 
-name: Invite organzation members based on merged PRs
+name: Invite organization members based on merged PRs
 
 on:
   schedule:
