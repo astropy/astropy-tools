@@ -23,6 +23,6 @@ jobs:
 
     - name: Perform copy
       env:
-        ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }}
+        ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }} # this token needs "write:org" and maybe "repo:invite" or "admin:org" permissions TODO: fix this with the right answer once it's tested
       run: |
         python add_contributors_to_org.py --dry-run --verbose coordinated_package_policies.json
