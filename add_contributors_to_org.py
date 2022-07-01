@@ -23,19 +23,19 @@ class GitHubOrgAutoInvite:
         Parameters
         ----------
 
-        organization: str
+        organization : str
             Name of the organization on GitHub.
 
         token : str
             GitHub token with administrative read/write permissions on
             the organization. The account needs sufficient privileges to
-            access all information about organization membership
+            access all information about organization membership.
 
         verbose : bool, optional
-            If ``True``, print information about progress.
+            If `True`, print information about progress.
 
         dry_run : bool, optional
-            If ``True``, do everything *except* actually invitations. A
+            If `True`, do everything *except* actually invitations. A
             message is printed instead of issuing the invitation. Intended
             for debugging.
 
@@ -60,7 +60,7 @@ class GitHubOrgAutoInvite:
         # If the token does not have sufficient scope then the initialization will fail
         # here.
         self.blocked_users = [b.login for b in self.org.blocked_users()]
-        self.open_invitiation = [i.login for i in self.org.invitations()]
+        self.open_invitation = [i.login for i in self.org.invitations()]
         self.failed_invites = get_failed_invitations(token, self.org.url)
 
         # Get list of current members
@@ -128,7 +128,7 @@ class GitHubOrgAutoInvite:
                 continue
             elif (author in self.blocked_users):
                 continue
-            elif (author in self.open_invitiation):
+            elif (author in self.open_invitation):
                 continue
             elif (author == 'ghost'):
                 # ghost is the login for any user who has deleted their account
