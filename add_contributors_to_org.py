@@ -17,7 +17,41 @@ class GitHubOrgAutoInvite:
                  oldest_date=None,
                  min_invite_gap_days=365):
         """
+        Generate automatic invitations to an organization based on merged
+        pull requests.
 
+        Parameters
+        ----------
+
+        organization: str
+            Name of the organization on GitHub.
+
+        token : str
+            GitHub token with administrative read/write permissions on
+            the organization. The account needs sufficient privileges to
+            access all information about organization membership
+
+        verbose : bool, optional
+            If ``True``, print information about progress.
+
+        dry_run : bool, optional
+            If ``True``, do everything *except* actually invitations. A
+            message is printed instead of issuing the invitation. Intended
+            for debugging.
+
+        n_min_pr : int, optional
+            Minimum number of pull requests someone not in the organization
+            must have had merged to be issued an invitation.
+
+        oldest_date : str, optional
+            Date, formatted using ISO format, before which PRs are ignored.
+
+        min_invite_gap_days : int, optional
+            Minimum number of days between invitations. Invitations are
+            re-sent if it has been at least this many days since the last
+            invitation failed and if that failure was because the user never
+            responded. If the user has said no, they do not get invited again
+            by the bot.
         """
         self.github_connection = github3.login(token=token)
         self.org = self.github_connection.organization(organization)
@@ -57,6 +91,10 @@ class GitHubOrgAutoInvite:
             Name of a repository in the organization to check for
             contributors.
         """
+        print_prefix = "\t"
+        if self.verbose:
+            print(f"Processing repository {repo}")
+
         org_repo = self.github_connection.repository(self.org.login, repo)
 
         pr_count = {}
@@ -73,14 +111,14 @@ class GitHubOrgAutoInvite:
         not_in = []
 
         if self.verbose:
-            print("Getting merged PRs")
+            print(print_prefix, "Getting merged PRs")
 
         # By default PRs are returned sorted in descending order by date
         # of creation.
         for pr in org_repo.pull_requests(state='closed'):
             if pr.created_at.date() < too_old:
                 if self.verbose:
-                    print(f"Reached PRs older than {too_old}, breaking...")
+                    print(print_prefix, f"Reached PRs older than {too_old}, breaking...")
                 break
 
             author = pr.user.login
@@ -99,18 +137,20 @@ class GitHubOrgAutoInvite:
             pr_count[author] = 1
 
             if self.verbose:
-                print(f"Checking {author}")
+                print(print_prefix, f"Checking {author}")
 
             if author not in self.current_members:
                 if self.verbose:
-                    print(f'\t{author} is not in the astropy org')
+                    print(print_prefix, f'\t{author} is not in the astropy org')
                 not_in.append(author)
             else:
                 if self.verbose:
-                    print(f"\t{author} is already in the astropy org")
+                    print(print_prefix, f"\t{author} is already in the astropy org")
 
         if self.verbose:
-            print(f'These people are not in the astropy org: {not_in}')
+            print(print_prefix, f'These people from repository {repo} are '
+                                f'not in the org {self.org.login}: '
+                                f'\n{print_prefix}{print_prefix}{not_in}')
 
         failed_invitees = self.failed_invites.keys()
         to_add = []
@@ -118,11 +158,11 @@ class GitHubOrgAutoInvite:
             if author in self.failed_invites:
                 reason_to_fail = self._check_send_invitation(failed_invites[author])
                 if reason_to_fail and self.verbose:
-                    print(f"{author} will not be invited because {reason_to_fail}")
+                    print(print_prefix, f"{author} will not be invited because {reason_to_fail}")
                     continue
 
             if self.verbose:
-                print(f"{author} has {pr_count[author]} PRs in repo {repo}, "
+                print(print_prefix, f"{author} has {pr_count[author]} PRs in repo {repo}, "
                       f"minimum required is {self.n_min_pr}")
             if pr_count[author] >= self.n_min_pr:
                 to_add.append(author)
@@ -130,11 +170,13 @@ class GitHubOrgAutoInvite:
         # No one to add, so keep going
         if not to_add:
             if self.verbose:
-                print(f"No one to add from repository {repo}")
+                print(print_prefix, f"No one to add from repository {repo}")
             return
 
         if self.verbose:
-            print(f'Adding these people to the invite list to join the astropy org: {to_add}')
+            print(print_prefix, f'Adding these people from repository {repo} '
+                                f'to the invite list for the org {self.org.login}: '
+                                f'\n{print_prefix}{print_prefix}{to_add}')
 
         self.pending_invitation |= set(to_add)
 
@@ -144,7 +186,7 @@ class GitHubOrgAutoInvite:
         """
         for person in self.pending_invitation:
             if self.dry_run:
-                print(f'\tDRY RUN: would have invited {person}')
+                print(f'DRY RUN: would have invited {person}')
             else:
                 self.org.add_or_update_membership(person, role='member')
 
@@ -245,29 +287,6 @@ def main(org, token, args):
         A GitHub token with sufficient permissions to issue invitations
         to the astropy GitHub organization.
     """
-
-    # Figure out whether we got a repo name or a json file.
-    repo_or_json = args.repo_or_json_file
-
-    try:
-        with open(repo_or_json) as f:
-            repos = json.load(f)
-    except FileNotFoundError:
-        # Assume we got a repo name
-        repos = {}
-
-    if not repos:
-        # No json file, so construct dict from arguments
-        repos = {
-            repo_or_json: {
-                "min_merged_prs": args.num_pr,
-                "only_prs_since": args.date,
-                "min_time_between_invites_days": args.min_invite_gap,
-            }
-        }
-        if args.verbose:
-            print(f'Constructed settings {repos}')
-
     inviter = GitHubOrgAutoInvite(org, token,
                                   verbose=args.verbose,
                                   dry_run=args.dry_run,
@@ -275,9 +294,7 @@ def main(org, token, args):
                                   oldest_date=args.date,
                                   min_invite_gap_days=args.min_invite_gap)
 
-    for repo, settings in repos.items():
-        if args.verbose:
-            print(f'Processing {repo=}')
+    for repo in args.repos:
         inviter.process_invites_for_repo(repo)
 
     inviter.send_invitations()
@@ -294,15 +311,13 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description=description)
 
-    parser.add_argument('repo_or_json_file',
-                        help='Name of repository in the astropy GitHub '
-                             'organization to check for contributors '
-                             'who are not yet members of the organization. '
-                             '\nAlternatively, a json file can be specified '
-                             'that includes one or more repo names and '
-                             'settings for each repo.\n\n'
-                             'NOTE: Settings in a json file override command '
-                             'line settings.')
+    parser.add_argument('organization',
+                        help="Name of the GitHub organization to check for new "
+                             "invitees.")
+
+    parser.add_argument('repos', nargs='+',
+                        help="One or more repository in this organization "
+                             "which are to be checked for new pull requests.")
 
     parser.add_argument('--num-pr', '-n', action='store',
                         default=1, type=int,
@@ -337,6 +352,4 @@ if __name__ == '__main__':
                            ' do without sending invitations use the --dry-run'
                            ' option.')
 
-    main('astropy', token, args)
-    # main(token, args.repo, verbose=args.verbose,
-    #      dry_run=args.dry_run, n_min_pr=args.num_pr, oldest_date=args.date)
+    main(args.organization, token, args)
