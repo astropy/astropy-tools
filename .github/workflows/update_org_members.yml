@@ -21,8 +21,8 @@ jobs:
     - name: Install dependencies
       run: pip install github3.py
 
-    - name: Perform copy
+    - name: Issue invitations
       env:
-        ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }} # this token needs "write:org" and maybe "repo:invite" or "admin:org" permissions TODO: fix this with the right answer once it's tested
+        ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }} # this token needs org admin permissions
       run: |
         python add_contributors_to_org.py --dry-run --verbose coordinated_package_policies.json
