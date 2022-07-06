@@ -144,11 +144,11 @@ class GitHubOrgAutoInvite:
 
             if author not in self.current_members:
                 if self.verbose:
-                    print(print_prefix, f'\t{author} is not in the astropy org')
+                    print(print_prefix, f'\t{author} is not in the org {self.org.login}')
                 not_in.append(author)
             else:
                 if self.verbose:
-                    print(print_prefix, f"\t{author} is already in the astropy org")
+                    print(print_prefix, f"\t{author} is already in the org {self.org.login}")
 
         if self.verbose:
             print(print_prefix, f'These people from repository {repo} are '
@@ -288,7 +288,7 @@ def main(org, token, args):
 
     token : str
         A GitHub token with sufficient permissions to issue invitations
-        to the astropy GitHub organization.
+        to the GitHub organization.
     """
     inviter = GitHubOrgAutoInvite(org, token,
                                   verbose=args.verbose,
@@ -305,8 +305,8 @@ def main(org, token, args):
 
 if __name__ == '__main__':
 
-    description = ('Check for contributors to astropy packages'
-                   ' who are not in the astropy GitHub'
+    description = ('Check for contributors to packages in a GitHub org'
+                   ' who are not in the GitHub'
                    ' organization and send them an invitation.\n\n'
                    'Set the environment variable GITHUB_TOKEN to a valid'
                    ' GitHub token with permission to send invitations'
