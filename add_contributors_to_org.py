@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from collections import Counter
 from datetime import date, datetime
 import json
 import os
@@ -7,6 +8,238 @@ import requests
 
 # Package name is github3.py
 import github3
+
+
+class GitHubOrgAutoInvite:
+    def __init__(self, organization, token,
+                 verbose=False,
+                 dry_run=False,
+                 n_min_pr=1,
+                 oldest_date=None,
+                 min_invite_gap_days=365):
+        """
+        Generate automatic invitations to an organization based on merged
+        pull requests.
+
+        Parameters
+        ----------
+
+        organization : str
+            Name of the organization on GitHub.
+
+        token : str
+            GitHub token with administrative read/write permissions on
+            the organization. The account needs sufficient privileges to
+            access all information about organization membership.
+
+        verbose : bool, optional
+            If `True`, print information about progress.
+
+        dry_run : bool, optional
+            If `True`, do everything *except* actually invitations. A
+            message is printed instead of issuing the invitation. Intended
+            for debugging.
+
+        n_min_pr : int, optional
+            Minimum number of pull requests someone not in the organization
+            must have had merged to be issued an invitation.
+
+        oldest_date : str, optional
+            Date, formatted using ISO format, before which PRs are ignored.
+
+        min_invite_gap_days : int, optional
+            Minimum number of days between invitations. Invitations are
+            re-sent if it has been at least this many days since the last
+            invitation failed and if that failure was because the user never
+            responded. If the user has said no, they do not get invited again
+            by the bot.
+        """
+        self.github_connection = github3.login(token=token)
+        self.org = self.github_connection.organization(organization)
+
+        # Build lists of categories we should skip invites for
+        # If the token does not have sufficient scope then the initialization will fail
+        # here.
+        self.blocked_users = [b.login for b in self.org.blocked_users()]
+        self.open_invitation = [i.login for i in self.org.invitations()]
+        self.failed_invites = get_failed_invitations(token, self.org.url)
+
+        # Get list of current members
+        self.current_members = [member.login for member in self.org.members()]
+
+        # Set the state for this run
+        self.verbose = verbose
+        self.dry_run = dry_run
+        self.n_min_pr = n_min_pr
+        self.oldest_date = oldest_date
+        self.min_invite_gap_days = min_invite_gap_days
+
+        # These lists are populated as individual repositories are checked.
+        self.pending_invitation = set()
+
+    def process_invites_for_repo(self, repo):
+        """
+        Get list of contributors to a repository that are not currently
+        members of the GitHub organization and send them an
+        invitation to join the organization.
+
+        Contributor here means someone who has had a pull request merged.
+
+        Parameters
+        ----------
+
+        repo : str
+            Name of a repository in the organization to check for
+            contributors.
+        """
+        print_prefix = "\t"
+        if self.verbose:
+            print(f"\n\nProcessing repository {repo}")
+
+        org_repo = self.github_connection.repository(self.org.login, repo)
+
+        pr_count = {}
+
+        if self.oldest_date is not None:
+            if isinstance(self.oldest_date, str):
+                oldest_date = date.fromisoformat(self.oldest_date)
+            too_old = oldest_date
+        else:
+            # Go back one year from now
+            now = datetime.now()
+            too_old = date(now.year - 1, now.month, now.day)
+
+        not_in = []
+
+        if self.verbose:
+            print(print_prefix, "Getting merged PRs")
+
+        # By default PRs are returned sorted in descending order by date
+        # of creation.
+        pr_authors = []
+        for pr in org_repo.pull_requests(state='closed'):
+            if pr.created_at.date() < too_old:
+                if self.verbose:
+                    print(print_prefix, f"Reached PRs older than {too_old}, breaking...")
+                break
+            author = pr.user.login
+            pr_authors.append(author)
+
+        # This should reduce author processing to a minimum
+        pr_count = Counter(pr_authors)
+
+        for author in pr_count.keys():
+
+            # Stop processing in some cases
+            if (author in self.blocked_users):
+                continue
+            elif (author in self.open_invitation):
+                continue
+            elif (author == 'ghost'):
+                # ghost is the login for any user who has deleted their account
+                continue
+
+            if self.verbose:
+                print(print_prefix, f"Checking {author}")
+
+            if author not in self.current_members:
+                if self.verbose:
+                    print(print_prefix, f'\t{author} is not in the org {self.org.login}')
+                not_in.append(author)
+            else:
+                if self.verbose:
+                    print(print_prefix, f"\t{author} is already in the org {self.org.login}")
+
+        if self.verbose:
+            print(print_prefix, f'These people from repository {repo} are '
+                                f'not in the org {self.org.login}: '
+                                f'\n{print_prefix}{print_prefix}{not_in}')
+
+        failed_invitees = self.failed_invites.keys()
+        to_add = []
+        for author in not_in:
+            if author in self.failed_invites:
+                reason_to_fail = self._check_send_invitation(self.failed_invites[author])
+                if reason_to_fail and self.verbose:
+                    print(print_prefix, f"{author} will not be invited because {reason_to_fail}")
+                    continue
+
+            if self.verbose:
+                print(print_prefix, f"{author} has {pr_count[author]} PRs in repo {repo}, "
+                      f"minimum required is {self.n_min_pr}")
+            if pr_count[author] >= self.n_min_pr:
+                to_add.append(author)
+
+        # No one to add, so keep going
+        if not to_add:
+            if self.verbose:
+                print(print_prefix, f"No one to add from repository {repo}")
+            return
+
+        if self.verbose:
+            print(print_prefix, f'Adding these people from repository {repo} '
+                                f'to the invite list for the org {self.org.login}: '
+                                f'\n{print_prefix}{print_prefix}{to_add}')
+
+        self.pending_invitation |= set(to_add)
+
+    def send_invitations(self):
+        """
+        Actually issue the invitations to the organization
+        """
+        for person in self.pending_invitation:
+            if self.dry_run:
+                print(f'DRY RUN: would have invited {person}')
+            else:
+                self.org.add_or_update_membership(person, role='member')
+
+    def _check_send_invitation(self, failed_invite):
+        """
+        Decide whether a new invitation should be sent.
+
+        Invitations will only be sent if
+
+        1. The reason for failure is that a previous invitation expired without
+           action AND
+        2. The expiration was at least ``minimum_gap`` months ago.
+
+        Parameters
+        ----------
+
+        failed_invite : dict
+            A failed invitation from the GitHub API.
+
+        min_gap_days : int, optional
+            Minimum time in days from the expiration of a prior invitation
+            until a new invitation will be sent.
+        """
+        # Don't include the current GitHub cutoff of "7 days" in case they decide
+        # to change that in the future.
+        expired_fail_message = ("Invitation expired. User did not accept "
+                                "this invite for")
+
+        expired = failed_invite['failed_reason'].startswith(expired_fail_message)
+        if not expired:
+            fail_mesage = ('Failed because previous invitation did not expire. '
+                           'Instead, the previous invitation failed because '
+                           f'{failed_invite["failed_reason"]}')
+            return fail_mesage
+
+        last_expire = datetime.fromisoformat(failed_invite['failed_at'])
+        now = datetime.now(tz=last_expire.tzinfo)
+
+        # Add 1 because that is easier than finding fractions of a day.
+        # Also, we don't really care about fractional days here.
+        elapsed = (now - last_expire).days + 1
+        if elapsed < self.min_invite_gap_days:
+            fail_message = ('Failed because the time elapsed since the most '
+                            f'recent invitation, {elapsed} days, is less '
+                            f'than the minimum required gap of '
+                            f'{self.min_invite_gap_days} days')
+            return fail_message
+
+        # empty string means no need to fail invite
+        return ''
 
 
 # failed_invitations from the GitHub REST API is not part of the github3.py
@@ -45,173 +278,7 @@ def get_failed_invitations(token, org_url):
     return {f['login']: f for f in failed_invites.json()}
 
 
-def check_send_invitation(failed_invite, min_gap_days=365):
-    """
-    Decide whether a new invitation should be sent.
-
-    Invitations will only be sent if
-
-    1. The reason for failure is that a previous invitation expired without
-       action AND
-    2. The expiration was at least ``minimum_gap`` months ago.
-
-    Parameters
-    ----------
-
-    failed_invite : dict
-        A failed invitation from the GitHub API.
-
-    min_gap_days : int, optional
-        Minimum time in days from the expiration of a prior invitation
-        until a new invitation will be sent.
-    """
-    # Don't include the current GitHub cutoff of "7 days" in case they decide
-    # to change that in the future.
-    expired_fail_message = ("Invitation expired. User did not accept "
-                            "this invite for")
-
-    expired = failed_invite['failed_reason'].startswith(expired_fail_message)
-    if not expired:
-        fail_mesage = ('Failed because previous invitation did not expire. '
-                       'Instead, the previous invitation failed because '
-                       f'{failed_invite["failed_reason"]}')
-        fail_mesage
-
-    last_expire = datetime.fromisoformat(failed_invite['failed_at'])
-    now = datetime.now(tz=last_expire.tzinfo)
-
-    # Add 1 because that is easier than finding fractions of a day.
-    # Also, we don't really care about fractional days here.
-    elapsed = (now - last_expire).days + 1
-    if elapsed < min_gap_days:
-        fail_message = ('Failed because the time elapsed since the most '
-                        f'recent invitation, {elapsed} days, is less '
-                        f'than the minimum required gap of '
-                        f'{min_gap_days} days')
-        return fail_message
-
-    # empty string means no need to fail invite
-    return ''
-
-
-def process_invites_for_repo(token, repo,
-                             verbose=False, dry_run=False, n_min_pr=1,
-                             oldest_date=None, min_invite_gap_days=365):
-    """
-    Get list of contributors to a repository that are not currently
-    members of the Astropy GitHub organization and send them an
-    invitation to join the organization.
-
-    Contributor here means someone who has had a pull request merged.
-
-    Parameters
-    ----------
-
-    token : str
-        A GitHub token with adequate permissions to send invitations to
-        the Astropy GitHub organization.
-
-    repo : str
-        Name of a repository in the Astropy organization to check for
-        contributors.
-    """
-
-    g = github3.login(token=token)
-    astropy_org_repo = g.repository('astropy', repo)
-    astropy_org = g.organization('astropy')
-
-    # Build lists of a couple of categories we should skip invites for
-    astropy_blocked = [b.login for b in astropy_org.blocked_users()]
-    astropy_open_invitiation = [i.login for i in astropy_org.invitations()]
-
-    already_tried = []
-
-    not_in = []
-
-    pr_count = {}
-
-    if oldest_date is not None:
-        if isinstance(oldest_date, str):
-            oldest_date = date.fromisoformat(oldest_date)
-        too_old = oldest_date
-    else:
-        # Go back one year from now
-        now = datetime.now()
-        too_old = date(now.year - 1, now.month, now.day)
-
-    # By default PRs are returned sorted in descending order by date
-    # of creation.
-    if verbose:
-        print("Getting merged PRs")
-
-    for pr in astropy_org_repo.pull_requests(state='closed'):
-        if pr.created_at.date() < too_old:
-            if verbose:
-                print(f"Reached PRs older than {too_old}, breaking...")
-            break
-
-        author = pr.user.login
-
-        if (author in already_tried):
-            pr_count[author] += 1
-            continue
-        elif (author in astropy_blocked):
-            continue
-        elif (author in astropy_open_invitiation):
-            continue
-        elif (author == 'ghost'):
-            # ghost is the login for any user who has deleted their account
-            continue
-
-        pr_count[author] = 1
-
-        if verbose:
-            print(f"Checking {author}")
-
-        if not astropy_org.is_member(author):
-            if verbose:
-                print(f'\t{author} is not in the astropy org')
-            not_in.append(author)
-        else:
-            if verbose:
-                print(f"\t{author} is already in the astropy org")
-
-        already_tried.append(author)
-
-    if verbose:
-        print(f'These people are not in the astropy org: {not_in}')
-        print('Checking number of pull requests')
-
-    failed_invites = get_failed_invitations(token, astropy_org.url)
-    failed_invitees = failed_invites.keys()
-    to_add = []
-    for author in not_in:
-        if author in failed_invitees:
-            reason_to_fail = check_send_invitation(failed_invites[author])
-            if reason_to_fail:
-                print(f"{author} will not be invited because {reason_to_fail}")
-                continue
-
-        if verbose:
-            print(f"{author} has {pr_count[author]} PRs")
-        if pr_count[author] >= n_min_pr:
-            to_add.append(author)
-
-    to_add = sorted(to_add)
-
-    if verbose:
-        print(f'Inviting these people to join the astropy org: {to_add}')
-
-    for person in to_add:
-        if verbose:
-            print(f"\tadding {person} to astropy org...")
-        if not dry_run:
-            astropy_org.add_or_update_membership(person, role='member')
-        else:
-            print(f'\tDRY RUN: would have invited {person}')
-
-
-def main(token, args):
+def main(org, token, args):
     """
     Process command line arguments and drive generation of
     invitations.
@@ -221,47 +288,25 @@ def main(token, args):
 
     token : str
         A GitHub token with sufficient permissions to issue invitations
-        to the astropy GitHub organization.
+        to the GitHub organization.
     """
+    inviter = GitHubOrgAutoInvite(org, token,
+                                  verbose=args.verbose,
+                                  dry_run=args.dry_run,
+                                  n_min_pr=args.num_pr,
+                                  oldest_date=args.date,
+                                  min_invite_gap_days=args.min_invite_gap)
 
-    # Figure out whether we got a repo name or a json file.
-    repo_or_json = args.repo_or_json_file
+    for repo in args.repos:
+        inviter.process_invites_for_repo(repo)
 
-    try:
-        with open(repo_or_json) as f:
-            repos = json.load(f)
-    except FileNotFoundError:
-        # Assume we got a repo name
-        repos = {}
-
-    if not repos:
-        # No json file, so construct dict from arguments
-        repos = {
-            repo_or_json: {
-                "min_merged_prs": args.num_pr,
-                "only_prs_since": args.date,
-                "min_time_between_invites_days": args.min_invite_gap,
-            }
-        }
-        if args.verbose:
-            print(f'Constructed settings {repos}')
-
-    for repo, settings in repos.items():
-        if args.verbose:
-            print(f'Processing {repo=}')
-        process_invites_for_repo(token, repo,
-                                 n_min_pr=settings["min_merged_prs"],
-                                 oldest_date=settings["only_prs_since"],
-                                 min_invite_gap_days=settings['min_time_between_invites_days'],
-                                 verbose=args.verbose,
-                                 dry_run=args.dry_run)
-
+    inviter.send_invitations()
 
 
 if __name__ == '__main__':
 
-    description = ('Check for contributors to astropy packages'
-                   ' who are not in the astropy GitHub'
+    description = ('Check for contributors to packages in a GitHub org'
+                   ' who are not in the GitHub'
                    ' organization and send them an invitation.\n\n'
                    'Set the environment variable GITHUB_TOKEN to a valid'
                    ' GitHub token with permission to send invitations'
@@ -269,18 +314,16 @@ if __name__ == '__main__':
 
     parser = ArgumentParser(description=description)
 
-    parser.add_argument('repo_or_json_file',
-                        help='Name of repository in the astropy GitHub '
-                             'organization to check for contributors '
-                             'who are not yet members of the organization. '
-                             '\nAlternatively, a json file can be specified '
-                             'that includes one or more repo names and '
-                             'settings for each repo.\n\n'
-                             'NOTE: Settings in a json file override command '
-                             'line settings.')
+    parser.add_argument('organization',
+                        help="Name of the GitHub organization to check for new "
+                             "invitees.")
+
+    parser.add_argument('repos', nargs='+',
+                        help="One or more repository in this organization "
+                             "which are to be checked for new pull requests.")
 
     parser.add_argument('--num-pr', '-n', action='store',
-                        default=2, type=int,
+                        default=1, type=int,
                         help='Minimum number of merged PRs contributor must '
                               'have to be added to organization.')
 
@@ -312,6 +355,4 @@ if __name__ == '__main__':
                            ' do without sending invitations use the --dry-run'
                            ' option.')
 
-    main(token, args)
-    # main(token, args.repo, verbose=args.verbose,
-    #      dry_run=args.dry_run, n_min_pr=args.num_pr, oldest_date=args.date)
+    main(args.organization, token, args)
