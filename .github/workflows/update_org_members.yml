@@ -6,6 +6,9 @@
 name: Invite organization members based on merged PRs
 
 on:
+  push:
+    branches:
+      - 'main'
   schedule:
     # Run once a day at 22:14 UTC (arbitrary time)
     - cron: '14 22 * * *'
