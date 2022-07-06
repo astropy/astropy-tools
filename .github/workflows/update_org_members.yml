@@ -24,5 +24,6 @@ jobs:
     - name: Issue invitations
       env:
         ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }} # this token needs org admin permissions
+        REPOS: "asdf-astropy astropy astropy-healpix astroquery ccdproc photutils regions reproject specreduce specutils"
       run: |
-        python add_contributors_to_org.py --dry-run --verbose astropy ccdproc ccd-reduction-and-photometry-guide
+        python add_contributors_to_org.py --dry-run --verbose astropy $REPOS
