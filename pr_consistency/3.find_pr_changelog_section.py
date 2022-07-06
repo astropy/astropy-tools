@@ -36,8 +36,8 @@ else:
 
 TMPDIR = tempfile.mkdtemp()
 
-BLOCK_PATTERN = re.compile('[[(]#[0-9#, ]+[])]')
-ISSUE_PATTERN = re.compile('#[0-9]+')
+BLOCK_PATTERN = re.compile(r'[\[(]#[0-9#, ]+[\])]')
+ISSUE_PATTERN = re.compile(r'#[0-9]+')
 
 
 def find_prs_in_changelog(content):
@@ -69,6 +69,8 @@ for line in changelog_lines:
             for pr in find_prs_in_changelog(content):
                 changelog_prs[pr] = version
         version = previous.strip().split('(')[0].strip()
+        if version.startswith('Version '):
+            version = version.split()[1]
         if 'v' not in version:
             version = 'v' + version
         content = ''
