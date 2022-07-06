@@ -1,4 +1,5 @@
 from argparse import ArgumentParser
+from collections import Counter
 from datetime import date, datetime
 import json
 import os
@@ -93,7 +94,7 @@ class GitHubOrgAutoInvite:
         """
         print_prefix = "\t"
         if self.verbose:
-            print(f"Processing repository {repo}")
+            print(f"\n\nProcessing repository {repo}")
 
         org_repo = self.github_connection.repository(self.org.login, repo)
 
@@ -115,26 +116,28 @@ class GitHubOrgAutoInvite:
 
         # By default PRs are returned sorted in descending order by date
         # of creation.
+        pr_authors = []
         for pr in org_repo.pull_requests(state='closed'):
             if pr.created_at.date() < too_old:
                 if self.verbose:
                     print(print_prefix, f"Reached PRs older than {too_old}, breaking...")
                 break
-
             author = pr.user.login
+            pr_authors.append(author)
 
-            if (author in pr_count.keys()):
-                pr_count[author] += 1
-                continue
-            elif (author in self.blocked_users):
+        # This should reduce author processing to a minimum
+        pr_count = Counter(pr_authors)
+
+        for author in pr_count.keys():
+
+            # Stop processing in some cases
+            if (author in self.blocked_users):
                 continue
             elif (author in self.open_invitation):
                 continue
             elif (author == 'ghost'):
                 # ghost is the login for any user who has deleted their account
                 continue
-
-            pr_count[author] = 1
 
             if self.verbose:
                 print(print_prefix, f"Checking {author}")
