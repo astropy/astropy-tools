@@ -159,7 +159,7 @@ class GitHubOrgAutoInvite:
         to_add = []
         for author in not_in:
             if author in self.failed_invites:
-                reason_to_fail = self._check_send_invitation(failed_invites[author])
+                reason_to_fail = self._check_send_invitation(self.failed_invites[author])
                 if reason_to_fail and self.verbose:
                     print(print_prefix, f"{author} will not be invited because {reason_to_fail}")
                     continue
