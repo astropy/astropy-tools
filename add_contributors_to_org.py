@@ -16,7 +16,8 @@ class GitHubOrgAutoInvite:
                  dry_run=False,
                  n_min_pr=1,
                  oldest_date=None,
-                 min_invite_gap_days=365):
+                 min_invite_gap_days=365,
+                 other_bots=None):
         """
         Generate automatic invitations to an organization based on merged
         pull requests.
@@ -77,6 +78,11 @@ class GitHubOrgAutoInvite:
         # These lists are populated as individual repositories are checked.
         self.pending_invitation = set()
 
+        self.other_bots = other_bots
+
+        if self.other_bots is None:
+            self.other_bots = []
+
     def process_invites_for_repo(self, repo):
         """
         Get list of contributors to a repository that are not currently
@@ -134,6 +140,12 @@ class GitHubOrgAutoInvite:
             if (author in self.blocked_users):
                 continue
             elif (author in self.open_invitation):
+                continue
+            elif author.endswith('[bot]'):
+                # GitHub's various bots have user names that end this way
+                continue
+            elif author in self.other_bots:
+                # Any other bots that don't follow the GitHub ends-with-[bot] pattern
                 continue
             elif (author == 'ghost'):
                 # ghost is the login for any user who has deleted their account
@@ -295,7 +307,8 @@ def main(org, token, args):
                                   dry_run=args.dry_run,
                                   n_min_pr=args.num_pr,
                                   oldest_date=args.date,
-                                  min_invite_gap_days=args.min_invite_gap)
+                                  min_invite_gap_days=args.min_invite_gap,
+                                  other_bots=args.other_bots)
 
     for repo in args.repos:
         inviter.process_invites_for_repo(repo)
@@ -345,6 +358,9 @@ if __name__ == '__main__':
 
     parser.add_argument('--verbose', '-v', action='store_true',
                         help='Display more output while running.')
+
+    parser.add_argument('--other-bots', nargs='+',
+                        help="GitHub names of bot accounts that do NOT end with '[bot]'")
 
     args = parser.parse_args()
 
