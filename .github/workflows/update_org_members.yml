@@ -28,5 +28,6 @@ jobs:
       env:
         ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }} # this token needs org admin permissions
         REPOS: "asdf-astropy astropy astropy-healpix astroquery ccdproc photutils regions reproject specreduce specutils"
+        OTHER_BOTS: "meeseeksmachine"  # Accounts that end [bot] are already filtered out
       run: |
-        python add_contributors_to_org.py --dry-run --verbose astropy $REPOS
+        python add_contributors_to_org.py --dry-run --other-bots $OTHER_BOTS --verbose astropy $REPOS
