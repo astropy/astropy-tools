@@ -28,9 +28,18 @@ jobs:
     - name: Find PR branches
       working-directory: pr_consistency
       run: python 2.find_pr_branches.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Find PR changelog section
       working-directory: pr_consistency
       run: python 3.find_pr_changelog_section.py
+    - name: Prepare output folder
+      working-directory: pr_consistency
+      run: mkdir output
     - name: Check consistency
       working-directory: pr_consistency
-      run: python 4.check_consistency.py
+      run: python 4.check_consistency.py > output/index.html
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: pr_consistency/output # The folder the action should deploy.
