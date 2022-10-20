@@ -1,3 +1,4 @@
+import os
 import netrc
 import getpass
 import warnings
@@ -21,6 +22,10 @@ BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
 
 def get_credentials(username=None, password=None, needs_token=False):
     pwtype = 'personal access token' if needs_token else 'password'
+
+    if needs_token and 'GITHUB_TOKEN' in os.environ:
+        print('Using GITHUB_TOKEN environment variable')
+        return None, os.environ['GITHUB_TOKEN']
 
     try:
         my_netrc = netrc.netrc()
