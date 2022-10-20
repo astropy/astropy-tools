@@ -1,0 +1,34 @@
+# GitHub Actions workflow for auto-inviting org members to human intervention.
+#
+# The file coordinate_package_policies.json contains the thresholds for
+# triggering addition for each of the coordinated packages.
+
+name: Run PR changelog consistency check scripts
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: pip install requests astropy
+    - name: Get merged PRs
+      working-directory: pr_consistency
+      run: python 1.get_merged_prs.py
+    - name: Find PR branches
+      working-directory: pr_consistency
+      run: python 2.find_pr_branches.py
+    - name: Find PR changelog section
+      working-directory: pr_consistency
+      run: python 3.find_pr_changelog_section.py
+    - name: Check consistency
+      working-directory: pr_consistency
+      run: python 4.check_consistency.py
