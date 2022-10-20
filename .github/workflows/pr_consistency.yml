@@ -23,6 +23,8 @@ jobs:
     - name: Get merged PRs
       working-directory: pr_consistency
       run: python 1.get_merged_prs.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - name: Find PR branches
       working-directory: pr_consistency
       run: python 2.find_pr_branches.py
