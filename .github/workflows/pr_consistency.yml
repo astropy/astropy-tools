@@ -41,5 +41,8 @@ jobs:
       run: python 4.check_consistency.py > output/index.html
     - name: Deploy 🚀
       uses: JamesIves/github-pages-deploy-action@v4
+      if: ${{ github.ref == 'refs/heads/main' }}
       with:
         folder: pr_consistency/output # The folder the action should deploy.
+        # Use _astropy in following in case we set this up for other repos in future
+        target-folder: pr_consistency_astropy
