@@ -1,8 +1,3 @@
-# GitHub Actions workflow for auto-inviting org members to human intervention.
-#
-# The file coordinate_package_policies.json contains the thresholds for
-# triggering addition for each of the coordinated packages.
-
 name: Run PR changelog consistency check scripts
 on:
   push:
