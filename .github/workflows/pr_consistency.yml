@@ -1,0 +1,45 @@
+name: Run PR changelog consistency check scripts
+on:
+  schedule:
+    # run every day at 4am UTC
+    - cron: '0 4 * * *'
+  push:
+    branches:
+    - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+    - name: Install dependencies
+      run: pip install requests astropy
+    - name: Get merged PRs
+      working-directory: pr_consistency
+      run: python 1.get_merged_prs.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Find PR branches
+      working-directory: pr_consistency
+      run: python 2.find_pr_branches.py
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Find PR changelog section
+      working-directory: pr_consistency
+      run: python 3.find_pr_changelog_section.py
+    - name: Prepare output folder
+      working-directory: pr_consistency
+      run: mkdir output
+    - name: Check consistency
+      working-directory: pr_consistency
+      run: python 4.check_consistency.py > output/index.html
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4
+      if: ${{ github.ref == 'refs/heads/main' }}
+      with:
+        folder: pr_consistency/output # The folder the action should deploy.
+        # Use _astropy in following in case we set this up for other repos in future
+        target-folder: pr_consistency_astropy

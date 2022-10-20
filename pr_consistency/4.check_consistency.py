@@ -16,9 +16,9 @@ def parse_isoformat(string):
     return datetime.strptime(string, "%Y-%m-%dT%H:%M:%S")
 
 
-# Only consider PRs merged after this date/time. At the moment, this is the
-# date and time at which the v1.0.x branch was created.
-START = parse_isoformat('2015-01-27T16:22:59')
+# Only consider PRs merged after this date/time - adjust this if you want to
+# check for consistency further in the past.
+START = parse_isoformat('2020-01-01T00:00:00')
 
 # The following option can be toggled to show only pull requests with issues or
 # show all pull requests.
@@ -67,10 +67,10 @@ BRANCH_CLOSED_DICT = {'astropy/astropy': {
                           'v3.0.x': parse_isoformat('2018-10-18T16:00:00'),
                           'v3.1.x': parse_isoformat('2019-04-15T16:00:00'),
                           'v3.2.x': parse_isoformat('2019-11-10T16:00:00'),
-                          'v4.0.x': None,
+                          'v4.0.x': parse_isoformat('2021-10-29T16:00:00'),
                           'v4.1.x': parse_isoformat('2020-11-25T06:46:46'),
-                          'v4.2.x': None,
-                          'v4.3.x': None,
+                          'v4.2.x': parse_isoformat('2021-04-01T16:00:00'),
+                          'v4.3.x': parse_isoformat('2021-10-29T16:00:00'),
                           'v5.0.x': None,
                           'v5.1.x': None, },
                       }
@@ -112,6 +112,7 @@ MANUAL_MERGES_DICT = {
                         '11401': ('v4.2.x'),
                         '11250': ('v4.2.x'),
                         '9183': ('v4.3.x'),
+                        '11724': ('v4.0.x'),
                     },
     'astropy/astropy-helpers': {'205': ('v1.1.x', 'v1.2.x', 'v1.3.x', 'v2.0.x',
                                         'v3.0.x', 'v3.1.x', 'v3.2.x', 'v4.0.x'),

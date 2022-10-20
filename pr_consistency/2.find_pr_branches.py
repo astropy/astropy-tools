@@ -26,7 +26,7 @@ print("The repository this script currently works with is '{}'.\n"
       .format(REPOSITORY_NAME))
 
 
-REPOSITORY = f'git://github.com/{REPOSITORY_NAME}.git'
+REPOSITORY = f'https://github.com/{REPOSITORY_NAME}.git'
 NAME = os.path.basename(REPOSITORY_NAME)
 
 DIRTOCLONEIN = tempfile.mkdtemp()  # set this to a non-temp directory to retain the clone between runs
