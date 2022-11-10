@@ -3,6 +3,7 @@ import datetime
 
 import requests
 from dateutil.relativedelta import relativedelta
+from github import Github
 from packaging.version import Version
 
 
@@ -15,8 +16,46 @@ def get_pkg_pypi_json(package_name):
         raise ValueError(r.reason)
 
 
-def check_ape18_cpython():
-    raise NotImplementedError('Asked Python org and waiting for reply')
+def check_ape18_cpython(token=None):
+    """All minor versions of Python released 42 months prior to a non-bugfix,
+    and at minimum the two latest minor versions.
+    """
+    utcnow = datetime.datetime.utcnow()
+    fourtytwo_mo_ago = utcnow - relativedelta(months=42)
+
+    g = Github(token)
+    repo = g.get_repo('python/cpython')
+    newest_release_str = ''
+    oldest_release_str = ''
+    oldest_release_date = None
+    cur_major = 0
+
+    # Assume reverse chronological order.
+    # This assumes all the tags are of the same major release.
+    for tag in repo.get_tags():
+        tag_name = tag.name
+        tag_date = tag.commit.commit.committer.date
+        cur_release = Version(tag_name)
+        cur_minor = cur_release.minor
+        if (cur_release.dev or cur_release.pre or cur_release.post
+                or cur_release.micro != 0):
+            continue
+        if not newest_release_str:  # Set baseline
+            newest_release_str = tag_name
+            cur_major = cur_release.major
+            two_minor_ago = cur_minor - 2
+            print(f'Newest: {newest_release_str}')
+            continue
+        elif cur_release.major != cur_major:
+            continue
+        print(f'Processing {tag_name}')  # DEBUG
+        if tag_date >= fourtytwo_mo_ago or cur_minor > two_minor_ago:
+            oldest_release_str = tag_name
+            oldest_release_date = tag_date
+        elif tag_date < fourtytwo_mo_ago and oldest_release_str:
+            break
+
+    print(f'Oldest to support: {oldest_release_str} ({oldest_release_date})')
 
 
 def check_ape18_numpy():
