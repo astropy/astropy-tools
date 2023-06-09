@@ -3,18 +3,14 @@ on:
   schedule:
     # run every day at 4am UTC
     - cron: '0 4 * * *'
-  push:
-    branches:
-    - main
-  pull_request:
   workflow_dispatch:
 
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v4
     - name: Install dependencies
       run: pip install requests astropy
     - name: Get merged PRs
