@@ -1,8 +1,5 @@
 name: Run PR changelog consistency check scripts
 on:
-  schedule:
-    # run every day at 4am UTC
-    - cron: '0 4 * * *'
   workflow_dispatch:
 
 jobs:
