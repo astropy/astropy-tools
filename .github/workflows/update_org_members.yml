@@ -6,18 +6,16 @@
 name: Invite organization members based on merged PRs
 
 on:
-  push:
-    branches:
-      - 'main'
   schedule:
     # Run once a day at 22:14 UTC (arbitrary time)
     - cron: '14 22 * * *'
+  workflow_dispatch:
 
 jobs:
   invite_members:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
     - uses: actions/setup-python@v4
 
