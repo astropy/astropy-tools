@@ -1,0 +1,33 @@
+# GitHub Actions workflow for auto-inviting org members to human intervention.
+#
+# The file coordinate_package_policies.json contains the thresholds for
+# triggering addition for each of the coordinated packages.
+
+name: Invite organization members based on merged PRs
+
+on:
+  schedule:
+    # Run once a day at 22:14 UTC (arbitrary time)
+    - cron: '14 22 * * *'
+  workflow_dispatch:
+
+jobs:
+  invite_members:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: pip install github3.py
+
+    - name: Issue invitations
+      env:
+        ORG_INVITE_TOKEN: ${{ secrets.ORG_INVITE_TOKEN }} # this token needs org admin permissions
+        REPOS: "asdf-astropy astropy astropy-healpix astroquery ccdproc photutils regions reproject specreduce specutils"
+        OTHER_BOTS: "meeseeksmachine"  # Accounts that end [bot] are already filtered out
+      run: |
+        python add_contributors_to_org.py --other-bots $OTHER_BOTS --verbose astropy $REPOS

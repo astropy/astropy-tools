@@ -1,3 +1,4 @@
+import os
 import netrc
 import getpass
 import warnings
@@ -8,7 +9,8 @@ BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
                                      'v1.0.x', 'v1.1.x', 'v1.2.x', 'v1.3.x',
                                      'v2.0.x',
                                      'v3.0.x', 'v3.1.x', 'v3.2.x',
-                                     'v4.0.x', 'v4.1.x', 'v4.2.x', 'v4.3.x'],
+                                     'v4.0.x', 'v4.1.x', 'v4.2.x', 'v4.3.x',
+                                     'v5.0.x', 'v5.1.x'],
                  'astropy/astropy-helpers': ['v0.4.x', 'v1.0.x', 'v1.1.x',
                                              'v1.2.x', 'v1.3.x',
                                              'v2.0.x',
@@ -21,6 +23,10 @@ BRANCHES_DICT = {'astropy/astropy': ['v0.1.x', 'v0.2.x', 'v0.3.x', 'v0.4.x',
 def get_credentials(username=None, password=None, needs_token=False):
     pwtype = 'personal access token' if needs_token else 'password'
 
+    if needs_token and 'GITHUB_TOKEN' in os.environ:
+        print('Using GITHUB_TOKEN environment variable')
+        return None, os.environ['GITHUB_TOKEN']
+
     try:
         my_netrc = netrc.netrc()
     except Exception:
@@ -31,7 +37,7 @@ def get_credentials(username=None, password=None, needs_token=False):
             response = 'NONE'  # to allow enter to be default Y
             while response.lower() not in ('y', 'n', ''):
                 print('Using the following GitHub credentials from '
-                      '~/.netrc: {0}/{1}'.format(auth[0], '*' * 8))
+                      '~/.netrc: {}/{}'.format(auth[0], '*' * 8))
                 response = input(
                     'Use these credentials (if not you will be prompted '
                     'for new credentials)? [Y/n] ')

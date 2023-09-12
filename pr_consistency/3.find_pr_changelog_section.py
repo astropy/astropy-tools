@@ -31,13 +31,13 @@ if os.environ.get('LOCAL_CHANGELOG'):
     with open(CHANGELOG) as f:
         changelog_lines = f.readlines()
 else:
-    CHANGELOG = 'https://raw.githubusercontent.com/{}/main/{}'.format(REPOSITORY, CHANGELOG_NAME)
+    CHANGELOG = f'https://raw.githubusercontent.com/{REPOSITORY}/main/{CHANGELOG_NAME}'
     changelog_lines = requests.get(CHANGELOG).text.splitlines()
 
 TMPDIR = tempfile.mkdtemp()
 
-BLOCK_PATTERN = re.compile('[[(]#[0-9#, ]+[])]')
-ISSUE_PATTERN = re.compile('#[0-9]+')
+BLOCK_PATTERN = re.compile(r'[\[(]#[0-9#, ]+[\])]')
+ISSUE_PATTERN = re.compile(r'#[0-9]+')
 
 
 def find_prs_in_changelog(content):
@@ -69,6 +69,8 @@ for line in changelog_lines:
             for pr in find_prs_in_changelog(content):
                 changelog_prs[pr] = version
         version = previous.strip().split('(')[0].strip()
+        if version.startswith('Version '):
+            version = version.split()[1]
         if 'v' not in version:
             version = 'v' + version
         content = ''
@@ -77,5 +79,5 @@ for line in changelog_lines:
         content += line
     previous = line
 
-with open('pull_requests_changelog_sections_{}.json'.format(NAME), 'w') as f:
+with open(f'pull_requests_changelog_sections_{NAME}.json', 'w') as f:
     json.dump(changelog_prs, f, sort_keys=True, indent=2)
