@@ -1,5 +1,5 @@
 # The purpose of this script is to download information about all pull
-# requests merged into the master branch of the given repository. This
+# requests merged into the main branch of the given repository. This
 # information is downloaded to a JSON file.
 
 import os
