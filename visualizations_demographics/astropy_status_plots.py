@@ -131,7 +131,7 @@ def commiters_plot(yrlabels=None, **plotkws):
     if yrlabels is None:
         yrlabels = np.arange((datetime.today().year - 2011) + 1) + 2011
 
-    plt.xticks([datetime(yr, 1, 1) for yr in yrlabels], yrlabels, fontsize=20)
+    plt.xticks([datetime(yr, 1, 1) for yr in yrlabels], yrlabels, fontsize=20, rotation=90)
 
     plt.ylim(0, len(dts)+1)
     plt.xlim(dts[0], dts[-1])
@@ -141,7 +141,7 @@ def commiters_plot(yrlabels=None, **plotkws):
         ytks.append(len(dts)+1)
     plt.yticks(ytks, fontsize=20)
 
-    plt.ylabel('# of Code Contributors', fontsize=30)
+    plt.ylabel('# of Astropy Contributors', fontsize=30)
     plt.tight_layout()
 
     return len(dts)+1
@@ -290,3 +290,8 @@ def plot_docs_visits(analyics_csvfn, **plotkws):
 
     return (times_docs, n_docs), (times_all, n_all)
 
+if __name__ == '__main__':
+    from matplotlib import pyplot as plt
+    plt.figure(figsize=(9, 6))
+    commiters_plot()
+    plt.savefig('astropy_commiters_may21.pdf')
