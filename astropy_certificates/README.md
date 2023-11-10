@@ -1,4 +1,4 @@
-# Certificates for AstroPy
+# Certificates for Astropy
 
 Adapted from [Learner Certificates](https://github.com/carpentries/learner-certificates/) for The Carpentries
 
