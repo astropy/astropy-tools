@@ -1,6 +1,6 @@
 # Certificates for Astropy
 
-Adapted from [Learner Certificates](https://github.com/carpentries/learner-certificates/) for The Carpentries
+Adapted from [Learner Certificates](https://github.com/carpentries/learner-certificates/) for The Carpentries.
 
 
 There are two ways to build certificates from this repo, one depends on the python package
@@ -15,7 +15,7 @@ jinja2 astropy.svg -D name="Firstname Lastname" -D date="Nov. 6, 2017" -D worksh
 svg2pdf lastname_firstname.svg 
 ```
 
-or with added location
+or with added location:
 
 ```
 jinja2 astropy_with_location.svg -D name="Firstname Lastname" -D location="Location
