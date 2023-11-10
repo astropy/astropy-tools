@@ -3,7 +3,9 @@
 Adapted from [Learner Certificates](https://github.com/carpentries/learner-certificates/) for The Carpentries
 
 
-There are two ways to build certificates from this repo, one depends on the python package cairosvg which in turn depends on cairo development libraries being installed. To use this method, use `bin/certificates.py` to build certificates.
+There are two ways to build certificates from this repo, one depends on the python package
+cairosvg which in turn depends on cairo development libraries being installed.
+To use this method, use `scripts/certificates.py` to build certificates.
 
 The second, pure python method uses the python packages jinja2, jinja2-cli and svglib to build the certificates.
 

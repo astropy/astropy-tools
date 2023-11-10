@@ -10,7 +10,7 @@ Generate a certificate from a template.
 
 On a Mac, a typical command line is
 
-python bin/certificates.py \
+python scripts/certificates.py \
        -b swc-instructor
        -r $HOME/sc/certification/ \
        -u turing_alan
@@ -38,7 +38,7 @@ such as:
 
 In this case, the command line invocation is:
 
-python bin/certificates.py \
+python scripts/certificates.py \
        -r $HOME/sc/certification/ \
        -c input.csv
 '''
