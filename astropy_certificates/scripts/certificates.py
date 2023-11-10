@@ -41,20 +41,17 @@ In this case, the command line invocation is:
 python scripts/certificates.py \
        -r $HOME/sc/certification/ \
        -c input.csv
-'''
-
-import sys
+'''  # noqa: E501
+import csv
 import os
 import re
-import csv
+import sys
 import tempfile
-import subprocess
-import unicodedata
-from optparse import OptionParser
 import time
+from optparse import OptionParser
 from datetime import date
-import cairosvg
 
+import cairosvg
 
 DATE_FORMAT = '%B %-d, %Y'
 
@@ -74,13 +71,14 @@ def parse_args():
     # -i argument retained for backward incompatibility,
     #  not used anymore
     parser.add_option('-i', '--ink',
-                      default='/Applications/Inkscape.app/Contents/Resources/bin/inkscape',
+                      default='/Applications/Inkscape.app/Contents/Resources/bin/inkscape',  # noqa: E501
                       dest='inkscape',
                       help='[deprecated] Path to Inkscape')
     parser.add_option('-b', '--badge',
                       default=None, dest='badge_type', help='Type of badge')
     parser.add_option('-r', '--root',
-                      default=os.getcwd(), dest='root_dir', help='Root directory (current by default)')
+                      default=os.getcwd(), dest='root_dir',
+                      help='Root directory (current by default)')
     parser.add_option('-u', '--userid',
                       default=None, dest='user_id', help='User ID')
     parser.add_option('-c', '--csv',
@@ -109,7 +107,7 @@ def extract_parameters(args):
     result = {}
     for a in args:
         fields = a.split('=')
-        assert len(fields) == 2, 'Badly formatted key-value pair "{0}"'.format(a)
+        assert len(fields) == 2, 'Badly formatted key-value pair "{0}"'.format(a)  # noqa: E501
         key, value = fields
         assert key not in result, 'Duplicate key "{0}"'.format(key)
         result[key] = value
@@ -123,20 +121,21 @@ def process_csv(args):
         reader = csv.reader(raw)
         for row in reader:
             check(len(row) == 6, 'Badly-formatted row in CSV: {0}'.format(row))
-            badge_type, args.params['instructor'], user_id, args.params['name'], email, args.params['date'] = row
+            badge_type, args.params['instructor'], user_id, args.params['name'], email, args.params['date'] = row  # noqa: E501
             if '-' in args.params['date']:
                 d = time.strptime(args.params['date'], '%Y-%m-%d')
                 d = date(*d[:3])
                 args.params['date'] = date.strftime(d, DATE_FORMAT)
             template_path = construct_template_path(args.root_dir, badge_type)
-            output_path = construct_output_path(args.root_dir, badge_type, user_id)
+            output_path = construct_output_path(args.root_dir, badge_type, user_id)  # noqa: E501
             create_certificate(template_path, output_path, args.params)
+
 
 def process_single(args):
     '''Process a single entry.'''
 
     template_path = construct_template_path(args.root_dir, args.badge_type)
-    output_path = construct_output_path(args.root_dir, args.badge_type, args.user_id)
+    output_path = construct_output_path(args.root_dir, args.badge_type, args.user_id)  # noqa: E501
     create_certificate(template_path, output_path, args.params)
 
 
@@ -181,7 +180,7 @@ def check_template(template, params):
     expected = re.findall(r'\{\{([^}]*)\}\}', template)
     missing = set(expected) - set(params.keys())
     check(not missing,
-          'Missing parameters required by template: {0}'.format(' '.join(missing)))
+          f"Missing parameters required by template: {' '.join(missing)}")
 
 
 def check(condition, message):
