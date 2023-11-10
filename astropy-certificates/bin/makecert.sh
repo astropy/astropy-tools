@@ -18,5 +18,3 @@ certout_svg=${certout_pdf/.pdf/.svg}
 jinja2 ${source_svg} ${context} > ${certout_svg} # fill template
 
 svg2pdf ${certout_svg} # convert to PDF
-
-
