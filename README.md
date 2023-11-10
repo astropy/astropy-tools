@@ -20,6 +20,13 @@ python next_pr_number.py org/repo
 
 If `org/repo` is not given, it looks in `astropy/astropy`.
 
+### astropy_certificates
+
+This directory contains materials to generate a "Certificate of Achievement"
+with Astropy logo on it. This is useful when Astropy runs a workshop
+and the host requests that certificates be given out for a reason or another.
+This certificate is **not** official and should not be used in resumes and so on.
+
 ### pr_consistency
 
 :warning: Its future is being discussed at
