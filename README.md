@@ -6,9 +6,13 @@ may be useful in other contexts, but stability is not guaranteed.
 
 ### add_contributors_to_org.py
 
+:no_entry: This is broken! See [GitHub Issue 178](https://github.com/astropy/astropy-tools/issues/178).
+
 This is used by [Invite organization members based on merged PRs](https://github.com/astropy/astropy-tools/actions/workflows/update_org_members.yml).
 
 ### next_pr_number.py
+
+✔️ Probably the most useful tool we have here.
 
 Find the next PR number for a given repo before you even open the PR.
 This is useful when you want to write the change log in advance
@@ -21,6 +25,8 @@ python next_pr_number.py org/repo
 If `org/repo` is not given, it looks in `astropy/astropy`.
 
 ### astropy_certificates
+
+✔️ Nadia used this for [Astropy workshop in Bulgaria](https://github.com/astropy/astropy-project/issues/345).
 
 This directory contains materials to generate a "Certificate of Achievement"
 with Astropy logo on it. This is useful when Astropy runs a workshop
